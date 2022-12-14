@@ -1,0 +1,86 @@
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   -       This is file "bou_newStyle.in"        -
+   The configuration file for parameters in "afid"   
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The user can configure "AFiD" by the switches below. Any option is to be 
+written within primes (e. g., 'option'). A three-digits, left aligned numerical 
+code is provided for each entry (e. g., 001). 
+
+Contact: R. Hartmann rDOThartmannATutwenteDOTnl 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+====> New / Restart Simulation ------------------------------------------------
+101 Read in data from files (no=n, yes=y)    NREAD              'n'
+102 Read in statistics from files (n/y)      STAREAD            'n'
+103 Reset stats (n/y)                        IRESET             'n'
+
+
+====> Grid specifications -----------------------------------------------------
+201 Number of grid nodes                     NXM NYM NZM        '192' '192' '192'
+202 Axis length (vertical/stream/span)       ALX3D YLEN ZLEN    '1.0' '1.0' '1.0'
+203 Grid distribution scheme V-Ax            ISTR3              '7'
+204 Grid distribution parameter              STR3               '3.2'
+
+
+====> Runtime limits ----------------------------------------------------------
+301 Max number of timesteps                  NTST               '100'  
+302 Max dimensionless time                   TMAX               '200'  
+303 Max wallclock time [s]                   WALLTIMEMAX        '3500'
+
+
+====> Numerical parameters ----------------------------------------------------
+401 Numerical scheme                         NSST               '3'
+    Modes: 1= 2nd order Adams Bashfort 
+           3= 3rd order Runge Kutta 
+402 Enable dynamic timesteps (n/y)           IDTV               'y'
+403 FIRST or CONSTANT time step              DT                 '1.e-8'
+404 Min/Max dynamic time step                DTMIN DTMAX        '1.e-8' '5.e-3'
+405 Stability param for dynamic steps        CFLMAX             '1.2'
+406 Max velocity divergence per step         RESID              '1.e-5'
+    (mass conservation criterion)
+407 Maximum local velocity                   VLIM               '1.e3'
+408 Initial Pertubation on the Temp field    EPS                '0.3'
+
+
+====> Physical parameters -----------------------------------------------------
+501 Prandtl number                           PRA                '0.71' 
+502 Enable therm driving & Rayleigh number   RAY                '1.38d10'
+503 Expansion coefficient ratio for CO2      LAMBDA_CO2         '-1.21'
+    (CO2 is denser than air)
+    (This quantity should be positive)
+504 Expansion coefficient ratio for H20 vap. LAMBDA_H20         '0.88'
+    (H2O vapour is lighter than air)
+    (This quantity should be positive)
+505 Inlet vent dimension and height          ILEN IHEIGHT       '0.1' '0.95'
+506 Outlet vent dimension and height         OLEN OHEIGHT       '0.1' '0.05'
+507 Ventilation airflow velocity             FLOWVEL            '1.57e-2' 
+508 Outlet descritization                    OUTDESC            '0'
+    (central-diff=1, upwind=0)
+508 Person geometry OBJfile                  OBJFILE            'sittingwoman03.obj' 
+510 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
+511 Breath geometry location and scale       BX BY BZ           '0.472' '0.5d0' '0.312'
+512 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
+513 Boundary Conditions (bottom/top)         inslws inslwn      '1' '1'
+    (free-slip=0, no-slip=1)
+
+====> Output parameters -------------------------------------------------------
+601 Enable statistic calculation (n/y)       STATON TSTA NOUT   'y' '100' '10'
+    Statistics starting flowtime and
+    Output timestep interval
+    for global quantities and stats
+602 Location of 2D planes for statistics     STATX STATY STATZ  '0.3' '0.5' '0.5'
+603 Start & Interval for 3D Snapshots        FF_ON TSTART TSAVE 'y' '100.0' '100.0'
+604 Enable 2D X, Y, Z slices for movie (n/y) MOVIEON TFRAME     'n' '0.1'
+605 Location of 2D planes for movie          MOVX MOVY MOVZ     '0.3' '0.5' '0.5'
+
+====> Other -------------------------------------------------------------------
+AT Vanshu: For Consistency I changed nomenclature a bit, but only in this file ;)
+TEMP_FIELD -> itemp
+WALL_REYNOLDS_NUMBER -> WREY
+INITIAL_PERTUBATION -> EPS (as in the code)
+CALC_SPECTRA -> SPECON
+ishear is just an idiot proof dummy flag that automatically sets the wall re number
+to zero if chosen as 'n' ;) + for consistency with the other numbers...

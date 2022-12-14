@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH --account=pr74sa
+#SBATCH --nodes=24
+#SBATCH --ntasks-per-node=48
+#SBATCH --partition=general
+#SBATCH --time=01:00:00
+#SBATCH --job-name=BASE
+
+module load slurm_setup
+
+srun --cpu_bind=cores -n $SLURM_NTASKS ./afid
