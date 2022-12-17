@@ -27,8 +27,9 @@ module param
     
     real            :: ray,pra,lambda_co2,lambda_h2o
     real            :: iheight,ilen,oheight,olen
-    real            :: ivel
-    integer         :: odesc
+    real            :: ivel,tvel
+    logical         :: person_on=.false.
+    logical         :: breath_on=.false.
     character*50    :: person_objfile
     real            :: personx,persony,personz,sclf
     real            :: breathx,breathy,breathz
@@ -158,9 +159,9 @@ end module movie_indices
 module ventilation_arrays
     implicit none
     real,allocatable,dimension(:,:,:)   :: ibm_body,ibm_breath
-    ! The below values are exactly at the boundary (even for staggered quantities)
-    real,allocatable,dimension(:,:)     :: outvx,outvy,outvz,outtemp,outco2,outh2o 
-    ! The below values are vent-normal derivatives at the boundary (bit inaccurate for vent-normal velocity)
+    ! The below values are required for the copy and paste outlet routines
+    real,allocatable,dimension(:,:)     :: outvx,outvy,outvz,outtemp,outco2,outh2o
+    ! The below values are upwind vent-normal derivatives at the boundary
     real,allocatable,dimension(:,:)     :: dzoutvx,dzoutvy,dzoutvz,dzouttemp,dzoutco2,dzouth2o
 end module ventilation_arrays
 

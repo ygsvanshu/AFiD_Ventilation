@@ -145,6 +145,16 @@ program AFiD
 
 	call InitPressureSolver
 
+	if (person_on) then
+		call CreateBodyIBM
+		call update_halo(ibm_body,lvlhalo)
+	end if
+
+	if (breath_on) then
+		call CreateBreathIBM
+		call update_halo(ibm_breath,lvlhalo)
+	end if
+
 	if(readflow) then
 		if(ismaster) write(6,*) 'Reading initial condition from file'
 		call ReadFlowField
@@ -170,21 +180,13 @@ program AFiD
 
 	if (savemovie) call InitMovie
 
-	! call CreateDebugBodyIBM
-	! call CreateBodyIBM
-	! call CreateBreathIBM
-
 	call update_halo(vx,lvlhalo)
 	call update_halo(vy,lvlhalo)
 	call update_halo(vz,lvlhalo)
 	call update_halo(temp,lvlhalo)
 	call update_halo(co2,lvlhalo)
 	call update_halo(h2o,lvlhalo)
-
 	call update_halo(pr,lvlhalo)
-
-	call update_halo(ibm_body,lvlhalo)
-    call update_halo(ibm_breath,lvlhalo)
 
 	!EP   Check divergence. Should be reduced to machine precision after the first
 	!phcalc. Here it can still be high.

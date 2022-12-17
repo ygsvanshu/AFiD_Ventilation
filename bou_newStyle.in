@@ -15,14 +15,13 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 ====> New / Restart Simulation ------------------------------------------------
 101 Read in data from files (no=n, yes=y)    NREAD              'n'
 102 Read in statistics from files (n/y)      STAREAD            'n'
-103 Reset stats (n/y)                        IRESET             'n'
 
 
 ====> Grid specifications -----------------------------------------------------
 201 Number of grid nodes                     NXM NYM NZM        '192' '192' '192'
 202 Axis length (vertical/stream/span)       ALX3D YLEN ZLEN    '1.0' '1.0' '1.0'
-203 Grid distribution scheme V-Ax            ISTR3              '7'
-204 Grid distribution parameter              STR3               '3.2'
+203 Grid distribution scheme V-Ax            ISTR3              '6'
+204 Grid distribution parameter              STR3               '8'
 
 
 ====> Runtime limits ----------------------------------------------------------
@@ -42,7 +41,6 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 406 Max velocity divergence per step         RESID              '1.e-5'
     (mass conservation criterion)
 407 Maximum local velocity                   VLIM               '1.e3'
-408 Initial Pertubation on the Temp field    EPS                '0.3'
 
 
 ====> Physical parameters -----------------------------------------------------
@@ -56,12 +54,11 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
     (This quantity should be positive)
 505 Inlet vent dimension and height          ILEN IHEIGHT       '0.1' '0.95'
 506 Outlet vent dimension and height         OLEN OHEIGHT       '0.1' '0.05'
-507 Ventilation airflow velocity             FLOWVEL            '1.57e-2' 
-508 Outlet descritization                    OUTDESC            '0'
-    (central-diff=1, upwind=0)
-508 Person geometry OBJfile                  OBJFILE            'sittingwoman03.obj' 
+507 Ventilation airflow velocity             IVEL TVEL          '1.57e-2' '1'
+508 Person and breath enabled (y/n)          PERSON BREATH      'y' 'y'
+509 Person geometry OBJfile                  OBJFILE            'sittingwoman03.obj' 
 510 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
-511 Breath geometry location and scale       BX BY BZ           '0.472' '0.5d0' '0.312'
+511 Breath geometry location and scale       BX BY BZ           '0.312' '0.5d0' '0.472'
 512 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
 513 Boundary Conditions (bottom/top)         inslws inslwn      '1' '1'
     (free-slip=0, no-slip=1)
@@ -73,7 +70,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
     for global quantities and stats
 602 Location of 2D planes for statistics     STATX STATY STATZ  '0.3' '0.5' '0.5'
 603 Start & Interval for 3D Snapshots        FF_ON TSTART TSAVE 'y' '100.0' '100.0'
-604 Enable 2D X, Y, Z slices for movie (n/y) MOVIEON TFRAME     'n' '0.1'
+604 Enable 2D X, Y, Z slices for movie (n/y) MOVIEON TFRAME     'y' '0.1'
 605 Location of 2D planes for movie          MOVX MOVY MOVZ     '0.3' '0.5' '0.5'
 
 ====> Other -------------------------------------------------------------------

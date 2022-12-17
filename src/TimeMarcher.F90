@@ -36,10 +36,7 @@ subroutine TimeMarcher
         call CorrectOutletFlux
         call SetWallBCs
 
-        call CalcOutletBC_CKN_UPWIND
-        ! call CalcOutletBC_RK3
-
-        ! call CalcSetOutletBC_RK3
+        call CalcOutletBC
 
         call ExplicitTermsVX
         call ExplicitTermsVY
@@ -55,16 +52,15 @@ subroutine TimeMarcher
         call ImplicitAndUpdateCO2
         call ImplicitAndUpdateH2O
 
-        call AddBodyIBM
-        call AddBreathIBM
+        if (person_on) call AddBodyIBM
+        if (breath_on) call AddBreathIBM
 
         call update_halo(vy,lvlhalo)
         call update_halo(vz,lvlhalo)
 
         call SetInletBC
         call SetWallBCs
-        call SetOutletBC_CKN_UPWIND
-        ! call SetOutletBC_RK3
+        call SetOutletBC
         call CorrectOutletFlux
         call SetWallBCs
 
@@ -99,6 +95,8 @@ subroutine TimeMarcher
         call update_halo(vz,lvlhalo)
         call update_halo(pr,lvlhalo)
         call update_halo(temp,lvlhalo)
+        call update_halo(co2,lvlhalo)
+        call update_halo(h2o,lvlhalo)
 
         call PasteOutletBC
         call SetInletBC

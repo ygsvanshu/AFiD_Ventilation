@@ -5,8 +5,8 @@
 # Basic Fortran compiler arguments 
 #--------------------------------------------------------------
 FC = h5pfc -fpp
-# FC += -r8 -Ofast
-FC += -r8 -O0 -g -traceback -check bounds
+FC += -r8 -Ofast
+# FC += -r8 -O0 -g -traceback -check bounds
 
 #--------------------------------------------------------------
 # Advanced Fortran compiler options 

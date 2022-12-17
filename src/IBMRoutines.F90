@@ -185,7 +185,7 @@ subroutine CreateBreathIBM
     do kc=1,nxm
         do jc=xstart(2),xend(2)
             do ic=xstart(3),xend(3)
-                ibm_breath(kc,jc,ic)=exp(-0.5*(  (2.0*(xc(ic)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2+   (2.0*(zm(kc)-breathz)/kernel_width_space)**2))
+                ibm_breath(kc,jc,ic)=exp(-0.5*((2.0*(xc(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2+   (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
             enddo
         enddo
     enddo
