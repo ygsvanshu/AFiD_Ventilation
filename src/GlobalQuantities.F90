@@ -66,8 +66,7 @@ subroutine GlobalQuantities
                 ip=ic+1
 
                 ! Check for not ibm_body
-                ibmc = 0.5d0*(ibm_body(kc,jc,ic) + ibm_body(kp,jc,ic))
-                if (ibmc.lt.1.0d-8) then
+                if (ibm_body(kc,jc,ic).lt.1.0d-8) then
 
                     ! Compute the cell volume
                     volc = dx3c(kc)/(dx*dy*dz)
@@ -131,7 +130,7 @@ subroutine GlobalQuantities
                     tempcen      = (temp(kc,jc,nzm)+temp(kp,jc,nzm)+temp(kc,jc,nz)+temp(kp,jc,nz))*0.25d0
                     co2cen       = (co2(kc,jc,nzm)+co2(kp,jc,nzm)+co2(kc,jc,nz)+co2(kp,jc,nz))*0.25d0
                     h2ocen       = (h2o(kc,jc,nzm)+h2o(kp,jc,nzm)+h2o(kc,jc,nz)+h2o(kp,jc,nz))*0.25d0
-                    outflux_vz = outflux_vz + (vz(kc,jc,nz)*cell_area)
+                    outflux_vz   = outflux_vz + (vz(kc,jc,nz)*cell_area)
                     outflux_temp = outflux_temp + (tempcen*vz(kc,jc,nz)*cell_area)
                     outflux_co2  = outflux_co2  + (co2cen*vz(kc,jc,nz)*cell_area)
                     outflux_h2o  = outflux_h2o  + (h2ocen*vz(kc,jc,nz)*cell_area)

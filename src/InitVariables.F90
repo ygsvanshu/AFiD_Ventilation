@@ -200,8 +200,8 @@ subroutine InitVariables
     call AllocateReal3DArray(dphhalo,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     
     ! For IBM of person body and breath
-    call AllocateReal3DArray(ibm_body,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
-    call AllocateReal3DArray(ibm_breath,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
+    call AllocateReal3DArray(ibm_body,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
+    call AllocateReal3DArray(ibm_breath,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
 
     !-----------------------------------------------
     ! Arrays without ghost cells
