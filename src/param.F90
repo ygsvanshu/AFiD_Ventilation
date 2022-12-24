@@ -156,14 +156,10 @@ module movie_indices
     integer                             :: mov_ci,mov_cj,mov_ck
 end module movie_indices
 
-module ventilation_arrays
+module ibm_arrays
     implicit none
     real,allocatable,dimension(:,:,:)   :: ibm_body,ibm_breath
-    ! The below values are required for the copy and paste outlet routines
-    real,allocatable,dimension(:,:)     :: outvx,outvy,outvz,outtemp,outco2,outh2o
-    ! The below values are upwind vent-normal derivatives at the boundary
-    real,allocatable,dimension(:,:)     :: dzoutvx,dzoutvy,dzoutvz,dzouttemp,dzoutco2,dzouth2o
-end module ventilation_arrays
+end module ibm_arrays
 
 !=====================================================    
 

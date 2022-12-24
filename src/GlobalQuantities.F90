@@ -13,7 +13,7 @@ subroutine GlobalQuantities
     use param
     use local_arrays,only: vy,vx,vz,temp,co2,h2o
     use decomp_2d,only: xstart,xend
-    use ventilation_arrays,only: ibm_body
+    use ibm_arrays,only: ibm_body
     use mpih
 
     implicit none
@@ -227,7 +227,7 @@ subroutine GlobalQuantities
         outflux_h2o  = outflux_h2o/vent_area
 
         open(95,file='Results/vol_stats.out',status='unknown',position='append',access='sequential')
-        if ((ntime.eq.0).and.(.not. readflow)) then
+        if ((ntime.eq.0).and.(.not.readflow)) then
             write(95,'(18(A14,X))') &
             'Time','Mean_Vx','Mean_Vy','Mean_Vz','Mean_Temp','Mean_CO2','Mean_H2O',&
             'RMS_Vx','RMS_Vy','RMS_Vz','RMS_Vel','RMS_Temp','RMS_CO2','RMS_H2O',&

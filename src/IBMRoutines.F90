@@ -12,7 +12,7 @@ subroutine CreateBodyIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use ventilation_arrays, only: ibm_body
+    use ibm_arrays, only: ibm_body
     use mpih
 
     implicit none
@@ -132,7 +132,7 @@ subroutine AddBodyIBM
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays, only: ibm_body
+    use ibm_arrays, only: ibm_body
     use mpih
 
     implicit none
@@ -170,7 +170,7 @@ subroutine CreateBreathIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use ventilation_arrays, only: ibm_breath
+    use ibm_arrays, only: ibm_breath
     use mpih
 
     implicit none
@@ -208,7 +208,7 @@ subroutine AddBreathIBM
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays, only: ibm_breath
+    use ibm_arrays, only: ibm_breath
     use mpih
 
     implicit none
@@ -273,7 +273,7 @@ subroutine CreateDebugBodyIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use ventilation_arrays, only: ibm_body
+    use ibm_arrays, only: ibm_body
     use mpih
 
     implicit none

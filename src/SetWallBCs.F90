@@ -14,7 +14,6 @@ subroutine SetWallBCs
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
     use mpih
 
     implicit none
@@ -50,7 +49,6 @@ subroutine SetInletBC
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
     use mpih
 
     implicit none
@@ -85,67 +83,36 @@ subroutine SetInletBC
 
 end subroutine SetInletBC
 
-subroutine CalcOutletBC
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-
-    ! This is the first part of the upwind Crank Nicolson based update of outlet nodes
-    ! Here we store the derivative for the current timestep at the wall with outlet vent
-    if (xend(3).eq.nzm) then
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Handy hack to avoid halo update for out quantities
-                dzoutvx(k,:) = (vx(k,:,nz) - vx(k,:,nzm))
-                dzouttemp(k,:) = (temp(k,:,nz) - temp(k,:,nzm))
-                dzoutco2(k,:) = (co2(k,:,nz) - co2(k,:,nzm))
-                dzouth2o(k,:) = (h2o(k,:,nz) - h2o(k,:,nzm))
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Handy hack to avoid halo update for out quantities
-                dzoutvy(k,:) = (vy(k,:,nz) - vy(k,:,nzm))
-                dzoutvz(k,:) = (vz(k,:,nz) - vz(k,:,nzm)) 
-            end if
-        end do
-    end if
-
-    return
-    
-end subroutine CalcOutletBC
-
 subroutine SetOutletBC
 
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
     use mpih
 
     implicit none
 
     integer :: i,j,k
-    real    :: cou,bet,res_dummy
-
-    ! This is the second part of the upwind Crank Nicolson based update of outlet nodes
     
-    ! Apparently this is somehow related to the Courant number and determines the speed of 
-    ! the Courant waves. Not sure why this is a fixed number instead of parameter*(delta_z/delta_t)
-    ! Any disturbance at the outlet which travels in waves slower than this speed gets advected out
-    ! Also called radiative/advective/non-reflecting boundary condition
-    cou = limitCFL
-    bet = 0.5*cou*al*dt*dz
+    ! In the slab code developed by ChongShen Ng, Steven Chong, Rui Yang and Naoki Hori, the outlet
+    ! boundary condition is an radiative/advective/non-reflecting boundary condition. The idea is to
+    ! have a speed that is somehow related to the Courant number and determines the speed of 
+    ! the Courant waves. Any disturbance at the outlet which travels in waves slower than this speed 
+    ! gets advected out. They solve d(q)/d(t) + C d(q)/d(z) = 0 at the outlet.
+    !
+    ! We tried this boundary condition and many more including imposing a fixed velocity
+    ! at the outlet. This always caused a numerical instability in the form waves entering the domain.
+    ! We found through trial and error that this is an instability related to the diffusive terms
+    ! since the diffusive terms in Z and Y direction are handled explicitly as compared to the slab code
+    ! where they are handled implicitly. Through trial and error, we found that imposing the double derivative
+    ! normal to the outflow as zero solves this issue (i.e. d^2(q)/dz^2 = 0). In a way, the solution at outflow 
+    ! is linearly interpolated from the interior. 
+    !
+    ! We still do not fully understand why it solves the issue though. However, the outflow is always going 
+    ! to be aphysical in nature and we do not care too much about the physical accuracy of the solution 
+    ! close to the outlet for the expected application of this code.
+    ! 
+    ! - Vanshu and Chris
 
     ! Wall with outlet vent
     if (xend(3).eq.nzm) then
@@ -159,18 +126,18 @@ subroutine SetOutletBC
         do k=1,nx
             ! Check if the node lies within the outlet dimensions
             if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                vx(k,:,nz) = (vx(k,:,nz) + (bet*(vx(k,:,nzm) - dzoutvx(k,:))))/(1.0d0 + bet)
-                temp(k,:,nz) = (temp(k,:,nz) + (bet*(temp(k,:,nzm) - dzouttemp(k,:))))/(1.0d0 + bet)
-                co2(k,:,nz) = (co2(k,:,nz) + (bet*(co2(k,:,nzm) - dzoutco2(k,:))))/(1.0d0 + bet)
-                h2o(k,:,nz) = (h2o(k,:,nz) + (bet*(h2o(k,:,nzm) - dzouth2o(k,:))))/(1.0d0 + bet)
+                vx(k,:,nz)      = 2.0d0*vx(k,:,nzm)     - vx(k,:,nzm-1)
+                temp(k,:,nz)    = 2.0d0*temp(k,:,nzm)   - temp(k,:,nzm-1)
+                co2(k,:,nz)     = 2.0d0*co2(k,:,nzm)    - co2(k,:,nzm-1)
+                h2o(k,:,nz)     = 2.0d0*h2o(k,:,nzm)    - h2o(k,:,nzm-1)
             end if
         end do
 
         do k=1,nxm
             ! Check for any overlap of grid cell with outlet
             if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                vy(k,:,nz) = (vy(k,:,nz) + (bet*(vy(k,:,nzm) - dzoutvy(k,:))))/(1.0d0 + bet)
-                vz(k,:,nz) = (vz(k,:,nz) + (bet*(vz(k,:,nzm) - dzoutvz(k,:))))/(1.0d0 + bet)
+                vy(k,:,nz)      = 2.0d0*vy(k,:,nzm)     - vy(k,:,nzm-1)
+                vz(k,:,nz)      = 2.0d0*vz(k,:,nzm)     - vz(k,:,nzm-1)
             end if
         end do
 
@@ -183,7 +150,6 @@ subroutine CorrectOutletFlux
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
     use mpih
 
     implicit none
@@ -258,54 +224,6 @@ subroutine CorrectOutletFlux
 
 end subroutine CorrectOutletFlux
 
-subroutine CopyOutletBC
-
-    ! This subroutine is required to ensure that the outlet B.C.s are not
-    ! replaced after a halo copy at the end of the time marcher scheme
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    if (xend(3).eq.nzm) then
-        outvx(:,:)   = vx(:,:,nz)
-        outvy(:,:)   = vy(:,:,nz)
-        outvz(:,:)   = vz(:,:,nz)
-        outtemp(:,:) = temp(:,:,nz)
-        outco2(:,:)  = co2(:,:,nz)
-        outh2o(:,:)  = h2o(:,:,nz)
-    end if
-
-end subroutine CopyOutletBC
-
-subroutine PasteOutletBC
-
-    ! This subroutine is required to ensure that the outlet B.C.s are not
-    ! replaced after a halo copy at the end of the time marcher scheme
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    if (xend(3).eq.nzm) then
-        vx(:,:,nz)   = outvx(:,:)
-        vy(:,:,nz)   = outvy(:,:)
-        vz(:,:,nz)   = outvz(:,:)
-        temp(:,:,nz) = outtemp(:,:)
-        co2(:,:,nz)  = outco2(:,:)
-        h2o(:,:,nz)  = outh2o(:,:)
-    end if
-
-end subroutine PasteOutletBC
-
 subroutine SetPressureBC
 
     ! This subroutine is required to ensure that the outlet B.C.s are not
@@ -354,7 +272,7 @@ subroutine SetDebugWallBCs
     ! Just plain side walls, no vents
     if (xstart(2).eq.1) then
         vx(:,0,:) = -vx(:,1,:)                  ! Dirchlet condition
-        vy(:,1,:) = 0.0d0                        ! Dirchlet condition
+        vy(:,1,:) = 0.0d0                       ! Dirchlet condition
         vz(:,0,:) = -vz(:,1,:)                  ! Dirchlet condition
         temp(:,0,:) = temp(:,1,:)               ! Adiabatic
         co2(:,0,:) = co2(:,1,:)                 ! Zero flux

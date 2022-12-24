@@ -32,12 +32,6 @@ subroutine TimeMarcher
         ga=gam(ns)
         ro=rom(ns)
 
-        call SetInletBC        
-        call CorrectOutletFlux
-        call SetWallBCs
-
-        call CalcOutletBC
-
         call ExplicitTermsVX
         call ExplicitTermsVY
         call ExplicitTermsVZ
@@ -55,11 +49,14 @@ subroutine TimeMarcher
         if (person_on) call AddBodyIBM
         if (breath_on) call AddBreathIBM
 
+        call update_halo(vx,lvlhalo)
         call update_halo(vy,lvlhalo)
         call update_halo(vz,lvlhalo)
+        call update_halo(temp,lvlhalo)
+        call update_halo(co2,lvlhalo)
+        call update_halo(h2o,lvlhalo)
 
         call SetInletBC
-        call SetWallBCs
         call SetOutletBC
         call CorrectOutletFlux
         call SetWallBCs
@@ -88,19 +85,10 @@ subroutine TimeMarcher
         call CorrectVelocity
         call CorrectPressure
 
-        call CopyOutletBC
-        
         call update_halo(vx,lvlhalo)
         call update_halo(vy,lvlhalo)
         call update_halo(vz,lvlhalo)
         call update_halo(pr,lvlhalo)
-        call update_halo(temp,lvlhalo)
-        call update_halo(co2,lvlhalo)
-        call update_halo(h2o,lvlhalo)
-
-        call PasteOutletBC
-        call SetInletBC
-        call SetWallBCs
 
     enddo
 

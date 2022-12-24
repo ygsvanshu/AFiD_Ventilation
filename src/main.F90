@@ -3,7 +3,7 @@ program AFiD
 	use mpih
 	use param
 	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr
-	use ventilation_arrays, only: ibm_body,ibm_breath
+	use ibm_arrays
 	use decomp_2d
 	use decomp_2d_fft
 	use stat_arrays, only: nstatsamples,tstat,tinterval
@@ -165,7 +165,12 @@ program AFiD
         time=0.d0
         instCFL=0.d0
         call CreateInitialConditions
+		call SetOutletBC
 	endif
+
+	call CorrectOutletFlux
+	call SetInletBC
+	call SetWallBCs
 
 	! Init tstat
 	if(statcalc) then

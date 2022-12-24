@@ -13,7 +13,7 @@ subroutine CreateInitialConditions
     use param
     use local_arrays, only: vy,vx,vz,temp,co2,h2o
     use decomp_2d, only: xstart,xend
-    use ventilation_arrays
+    use ibm_arrays
     use mpih
 
     implicit none

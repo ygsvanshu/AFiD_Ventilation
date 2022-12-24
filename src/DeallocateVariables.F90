@@ -13,7 +13,7 @@ subroutine DeallocateVariables
     use param
     use local_arrays
     use stat_arrays
-    use ventilation_arrays
+    use ibm_arrays
     use AuxiliaryRoutines
 
     implicit none
@@ -158,20 +158,6 @@ subroutine DeallocateVariables
         call DestroyReal2DArray(co2_m4_zcut)
         call DestroyReal2DArray(h2o_m4_zcut)
     end if
-
-    call DestroyReal2DArray(outvx)
-    call DestroyReal2DArray(outvy)
-    call DestroyReal2DArray(outvz)
-    call DestroyReal2DArray(outtemp)
-    call DestroyReal2DArray(outco2)
-    call DestroyReal2DArray(outh2o)
-
-    call DestroyReal2DArray(dzoutvx)
-    call DestroyReal2DArray(dzoutvy)
-    call DestroyReal2DArray(dzoutvz)
-    call DestroyReal2DArray(dzouttemp)
-    call DestroyReal2DArray(dzoutco2)
-    call DestroyReal2DArray(dzouth2o)
 
     call DestroyReal3DArray(vx)
     call DestroyReal3DArray(vy)

@@ -13,7 +13,7 @@ subroutine InitVariables
     use param
     use local_arrays
     use stat_arrays
-    use ventilation_arrays
+    use ibm_arrays
     use decomp_2d
     use AuxiliaryRoutines
 
@@ -172,20 +172,6 @@ subroutine InitVariables
         call AllocateReal2DArray(h2o_m4_zcut,1,nx,xstart(2),xend(2))
 
     end if
-
-    call AllocateReal2DArray(outvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outtemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outh2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-
-    call AllocateReal2DArray(dzoutvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzouttemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzouth2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
 
     !-------------------------------------------------
     ! Arrays with ghost cells
