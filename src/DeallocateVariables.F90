@@ -14,6 +14,7 @@ subroutine DeallocateVariables
     use local_arrays
     use stat_arrays
     use ibm_arrays
+    use vent_arrays
     use AuxiliaryRoutines
 
     implicit none
@@ -32,10 +33,8 @@ subroutine DeallocateVariables
     call DestroyReal1DArray(xm)
     call DestroyReal1DArray(g3rc)
     call DestroyReal1DArray(g3rm)
-    ! =ModR10=Robert=2020-11-02=====================================================
-    call DestroyReal1DArray(dx3c) ! Additional Grid parameters
-    call DestroyReal1DArray(dx3m) ! Additional Grid parameters
-    ! =End=of=ModR10================================================================
+    call DestroyReal1DArray(dx3c)
+    call DestroyReal1DArray(dx3m)
 
     call DestroyReal1DArray(udx3c)
     call DestroyReal1DArray(udx3m)
@@ -61,7 +60,6 @@ subroutine DeallocateVariables
     call DestroyInt1dArray(kmv)
     call DestroyInt1dArray(kpv)
 
-    ! =ModV13=Vanshu=2020=11=12=====================================================
     call DestroyReal1dArray(dcpdxc)
     call DestroyReal1dArray(dccdxc)
     call DestroyReal1dArray(dcmdxc)
@@ -69,6 +67,9 @@ subroutine DeallocateVariables
     call DestroyReal1dArray(dcpdxm)
     call DestroyReal1dArray(dccdxm)
     call DestroyReal1dArray(dcmdxm)
+
+    call DestroyReal1dArray(icell)
+    call DestroyReal1dArray(ocell)
 
     if (statcalc) then
         ! X-CUT

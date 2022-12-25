@@ -156,6 +156,20 @@ module movie_indices
     integer                             :: mov_ci,mov_cj,mov_ck
 end module movie_indices
 
+module vent_arrays
+    implicit none
+    real                                :: isvel,tsvel
+    integer                             :: ixcst,ixcen
+    integer                             :: ixmst,ixmen
+    integer                             :: ixfst,ixfen
+    integer                             :: oxcst,oxcen
+    integer                             :: oxmst,oxmen
+    integer                             :: oxfst,oxfen
+    real                                :: iflux,oflux
+    real                                :: iarea,oarea
+    real,allocatable,dimension(:)       :: icell,ocell
+end module vent_arrays
+
 module ibm_arrays
     implicit none
     real,allocatable,dimension(:,:,:)   :: ibm_body,ibm_breath
