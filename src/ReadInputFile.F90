@@ -211,13 +211,33 @@ SUBROUTINE read_from_bouin
 
         ELSEIF(line(1:3)=='507') THEN 
         ! ###### INLET FLOW VELOCITY ######  
-            call scan_string (line, 1, ss, narg)
+            call scan_string (line, 2, ss, narg)
             read(ss(1),*) ivel
+            read(ss(2),*) tvel
 
         ELSEIF(line(1:3)=='508') THEN 
-        ! ###### OUTLET DESCRITIZATION ######  
-            call scan_string (line, 1, ss, narg)
-            read(ss(1),*) odesc
+        ! ###### PERSON AND BREATH IBM ENABLED ######  
+            call scan_string (line, 2, ss, narg)
+            stringdummy1=ss(1)
+            if('y'==stringdummy1) then
+                person_on = .true.
+            elseif('n'==stringdummy1) then
+                person_on = .false.
+            else
+                Write(*,*)"ERROR: Input value of parameter PERSON not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
+            stringdummy1=ss(2)
+            if('y'==stringdummy1) then
+                breath_on = .true.
+            elseif('n'==stringdummy1) then
+                breath_on = .false.
+            else
+                Write(*,*)"ERROR: Input value of parameter BREATH not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
 
         ELSEIF(line(1:3)=='509') THEN 
         ! ###### FILENAME OF PERSON OBJ GEOMETRY ######  
@@ -233,7 +253,7 @@ SUBROUTINE read_from_bouin
             read(ss(4),*) sclf
 
         ELSEIF(line(1:3)=='511') THEN 
-        ! ###### PERSON GEOMETRY LOCATION AND SCALE ######  
+        ! ###### BREATH GEOMETRY LOCATION ######  
             call scan_string (line, 3, ss, narg)
             read(ss(1),*) breathx
             read(ss(2),*) breathy

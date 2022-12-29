@@ -9,12 +9,82 @@
 !                                                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+subroutine InitVents
+
+    use param
+    use vent_arrays
+    use mpih
+
+    implicit none
+
+    integer :: k
+
+    icell(:) = 0.0d0
+    ocell(:) = 0.0d0
+
+    iarea = ilen*ylen
+    oarea = olen*ylen
+
+    ixmst = nxm
+    ixmen = 1
+    oxmst = nxm
+    oxmen = 1
+
+    ixfst = nxm
+    ixfen = 1
+    oxfst = nxm
+    oxfen = 1
+
+    do k=1,nxm
+        !Checking for all grid points within the inlet
+        if ((xm(k).gt.(iheight-(0.5d0*ilen))).and.(xm(k).lt.(iheight+(0.5d0*ilen)))) then
+            ixmst       = min(ixmst,k)
+            ixmen       = max(ixmen,k)
+        end if
+        !Checking for all cells overlapping with the inlet
+        if ((xc(k+1).gt.(iheight-(0.5d0*ilen))).and.(xc(k).lt.(iheight+(0.5d0*ilen)))) then
+            ixfst       = min(ixfst,k)
+            ixfen       = max(ixfen,k)
+            icell(k)    = (min(xc(k+1),(iheight+(0.5d0*ilen))) - max(xc(k),(iheight-(0.5d0*ilen))))*dx/dx3c(k)
+        end if
+        !Checking for all grid points within the outlet
+        if ((xm(k).gt.(oheight-(0.5d0*olen))).and.(xm(k).lt.(oheight+(0.5d0*olen)))) then
+            oxmst       = min(oxmst,k)
+            oxmen       = max(oxmen,k)
+        end if
+        !Checking for all cells overlapping with the outlet
+        if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
+            oxfst       = min(oxfst,k)
+            oxfen       = max(oxfen,k)
+            ocell(k)    = (min(xc(k+1),(oheight+(0.5d0*olen))) - max(xc(k),(oheight-(0.5d0*olen))))*dx/dx3c(k)
+        end if
+    end do
+
+    ixcst = nx
+    ixcen = 1
+    oxcst = nx
+    oxcen = 1
+
+    do k=1,nx
+        !Checking for all grid points within the inlet
+        if ((xc(k).gt.(iheight-(0.5d0*ilen))).and.(xc(k).lt.(iheight+(0.5d0*ilen)))) then
+            ixcst       = min(ixcst,k)
+            ixcen       = max(ixcen,k)
+        end if
+        !Checking for all grid points within the outlet
+        if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
+            oxcst       = min(oxcst,k)
+            oxcen       = max(oxcen,k)
+        end if
+    end do
+
+end subroutine InitVents
+
 subroutine SetWallBCs
 
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
     use mpih
 
     implicit none
@@ -45,237 +115,145 @@ subroutine SetWallBCs
     
 end subroutine SetWallBCs
 
-subroutine CalcOutletBC_RK3
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-    real    :: cou,dqdz,cll,crr
-
-    cll = 0.5d0*real(odesc)
-    crr = 0.5d0*real(2-odesc)
-
-    ! Apparently this is somehow related to the Courant number and determines the speed of 
-    ! the Courant waves. Not sure why this is a fixed number instead of parameter*(delta_z/delta_t)
-    ! Any disturbance at the outlet which travels in waves slower than this speed gets advected out
-    ! Also called radiative/advective/non-reflecting boundary condition
-    cou = 0.3
-
-    ! Wall with outlet vent
-    if (xend(3).eq.nzm) then
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Handy hack to avoid halo update for out quantities
-                do j=xstart(2)-lvlhalo,xend(2)+lvlhalo
-                    ! Radiative outflow boundary condition for vx
-                    dqdz = (vx(k,j,nz) - vx(k,j,nzm))*dz
-                    outvx(k,j) = ((crr*vx(k,j,nz)) + (cll*vx(k,j,nzm)))
-                    outvx(k,j) = outvx(k,j) - (ga*dqdz+ro*dzoutvx(k,j))*cou*al*dt 
-                    dzoutvx(k,j) = dqdz
-                    ! Radiative outflow boundary condition for temp
-                    dqdz = (temp(k,j,nz) - temp(k,j,nzm))*dz
-                    outtemp(k,j) = ((crr*temp(k,j,nz)) + (cll*temp(k,j,nzm)))
-                    outtemp(k,j) = outtemp(k,j) - (ga*dqdz+ro*dzouttemp(k,j))*cou*al*dt
-                    dzouttemp(k,j) = dqdz
-                    ! Radiative outflow boundary condition for co2
-                    dqdz = (co2(k,j,nz) - co2(k,j,nzm))*dz
-                    outco2(k,j) = ((crr*co2(k,j,nz)) + (cll*co2(k,j,nzm)))
-                    outco2(k,j) = outco2(k,j) - (ga*dqdz+ro*dzoutco2(k,j))*cou*al*dt
-                    dzoutco2(k,j) = dqdz
-                    ! Radiative outflow boundary condition for h2o
-                    dqdz = (h2o(k,j,nz) - h2o(k,j,nzm))*dz
-                    outh2o(k,j) = ((crr*h2o(k,j,nz)) + (cll*h2o(k,j,nzm)))
-                    outh2o(k,j) = outh2o(k,j) - (ga*dqdz+ro*dzouth2o(k,j))*cou*al*dt
-                    dzouth2o(k,j) = dqdz
-                end do
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            ! if ((xm(k).gt.(oheight-(0.5d0*olen))).and.(xm(k).lt.(oheight+(0.5d0*olen)))) then
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                do j=xstart(2)-lvlhalo,xend(2)+lvlhalo
-                    ! Radiative outflow boundary condition for vy
-                    dqdz = (vy(k,j,nz) - vy(k,j,nzm))*dz
-                    outvy(k,j) = ((crr*vy(k,j,nz)) + (cll*vy(k,j,nzm)))
-                    outvy(k,j) = outvy(k,j) - (ga*dqdz+ro*dzoutvy(k,j))*cou*al*dt
-                    dzoutvy(k,j) = dqdz
-                    ! Radiative outflow boundary condition for vz
-                    ! This is different because it lies on the outlet instead of half a grid cell away
-                    ! This is a bit inaccurate, but this is the best we can do :'(   -[GSY]
-                    ! If this is not "upwind" then the outlet is not stable and solution blows up
-                    dqdz = (vz(k,j,nz) - vz(k,j,nzm))*dz 
-                    outvz(k,j) = vz(k,j,nz)
-                    outvz(k,j) = outvz(k,j) - (ga*dqdz+ro*dzoutvz(k,j))*cou*al*dt
-                    dzoutvz(k,j) = dqdz
-                end do
-            end if
-        end do
-    end if
-
-    return
-    
-end subroutine CalcOutletBC_RK3
-
 subroutine SetInletBC
 
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
+    use vent_arrays
     use mpih
 
     implicit none
 
     integer :: k,j
-    real    :: cell_ratio
+    real    :: cvel
+
+    ! This ensures that the inlet velocity slowly increases from zero using a smooth third order spline.
+    if (time.lt.(tsvel+tvel)) then
+        cvel = isvel + ((ivel-isvel)*((3.0d0*(((time-tsvel)/tvel)**2)) - (2.0d0*(((time-tsvel)/tvel)**3))))
+    else 
+        cvel = ivel
+    end if
 
     ! Wall with inlet vent
     if (xstart(3).eq.1) then
-        vx(:,:,0) = -vx(:,:,1)                  ! Dirchlet condition
-        vy(:,:,0) = -vy(:,:,1)                  ! Dirchlet condition
-        vz(:,:,1) = 0.0d0                       ! Dirchlet condition
-        temp(:,:,0) = temp(:,:,1)               ! Adiabatic
-        co2(:,:,0) = co2(:,:,1)                 ! Zero flux
-        h2o(:,:,0) = h2o(:,:,1)                 ! Zero flux
+        vx(:,:,0) = -vx(:,:,1)          ! Dirchlet condition
+        vy(:,:,0) = -vy(:,:,1)          ! Dirchlet condition
+        vz(:,:,1) = 0.0d0               ! Dirchlet condition
+        temp(:,:,0) = temp(:,:,1)       ! Adiabatic
+        co2(:,:,0) = co2(:,:,1)         ! Zero flux
+        h2o(:,:,0) = h2o(:,:,1)         ! Zero flux
     
-        do k=1,nxm
-            !Checking for all cells overlapping with the inlet
-            if ((xc(k+1).gt.(iheight-(0.5d0*ilen))).and.(xc(k).lt.(iheight+(0.5d0*ilen)))) then
-                cell_ratio = (min(xc(k+1),(iheight+(0.5d0*ilen))) - max(xc(k),(iheight-(0.5d0*ilen))))*dx/dx3c(k)
-                vz(k,:,1) = ivel*cell_ratio! Dirchlet condition
-            end if
+        do k=ixfst,ixfen
+            vz(k,:,1)  = cvel*icell(k)  ! Dirchlet condition
         end do
-
-        ! ********** DEBUG ********** !
-        do k=1,nx
-            if ((xc(k).gt.(iheight-(0.5d0*ilen))).and.(xc(k).lt.(iheight+(0.5d0*ilen)))) then
-                temp(k,:,0) = -2.0d0 - temp(k,:,1)! Dirchlet condition
-            end if
-        end do
-        ! ********** DEBUG ********** !
-
     end if
 
 end subroutine SetInletBC
-    
-subroutine SetOutletBC_RK3
+
+subroutine SetOutletBC
 
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
+    use vent_arrays
     use mpih
 
     implicit none
 
     integer :: i,j,k
-    real    :: inlet_flux, inlet_area, outlet_flux, outlet_area
-    real    :: res_dummy,c11,c22
-
-    c11 = real(1+odesc)
-    c22 = real(odesc)
+    
+    ! In the slab code developed by ChongShen Ng, Steven Chong, Rui Yang and Naoki Hori, the outlet
+    ! boundary condition is an radiative/advective/non-reflecting boundary condition. The idea is to
+    ! have a speed that is somehow related to the Courant number and determines the speed of 
+    ! the Courant waves. Any disturbance at the outlet which travels in waves slower than this speed 
+    ! gets advected out. They solve d(q)/d(t) + C d(q)/d(z) = 0 at the outlet.
+    !
+    ! We tried this boundary condition and many more including imposing a fixed velocity
+    ! at the outlet. This always caused a numerical instability in the form waves entering the domain.
+    ! We found through trial and error that this is an instability related to the diffusive terms
+    ! since the diffusive terms in Z and Y direction are handled explicitly as compared to the slab code
+    ! where they are handled implicitly. Through trial and error, we found that imposing the double derivative
+    ! normal to the outflow as zero solves this issue (i.e. d^2(q)/dz^2 = 0). In a way, the solution at outflow 
+    ! is linearly interpolated from the interior. 
+    !
+    ! We still do not fully understand why it solves the issue though. However, the outflow is always going 
+    ! to be aphysical in nature and we do not care too much about the physical accuracy of the solution 
+    ! close to the outlet for the expected application of this code.
+    ! 
+    ! - Vanshu and Chris
 
     ! Wall with outlet vent
     if (xend(3).eq.nzm) then
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vx
-                vx(k,:,nz) = c11*outvx(k,:) - c22*vx(k,:,nzm)
-                ! Apply outflow boundary condition for temp
-                temp(k,:,nz) = c11*outtemp(k,:) - c22*temp(k,:,nzm)
-                ! Apply outflow boundary condition for co2
-                co2(k,:,nz) = c11*outco2(k,:) - c22*co2(k,:,nzm)
-                ! Apply outflow boundary condition for h20
-                h2o(k,:,nz) = c11*outh2o(k,:) - c22*h2o(k,:,nzm)
-            else
-                ! Apply dirchlet boundary condition for vx on wall
-                vx(k,:,nz) = -vx(k,:,nzm)
-                ! Apply adiabatic boundary condition for temp on wall
-                temp(k,:,nz) = temp(k,:,nzm)
-                ! Apply zero flux boundary condition for co2 on wall
-                co2(k,:,nz) = co2(k,:,nzm)
-                ! Apply zero flux boundary condition for h2o on wall
-                h2o(k,:,nz) = h2o(k,:,nzm)
-            end if
+        vx(:,:,nz) = -vx(:,:,nzm)               ! Dirchlet condition
+        vy(:,:,nz) = -vy(:,:,nzm)               ! Dirchlet condition
+        vz(:,:,nz) = 0.0d0                      ! Dirchlet condition
+        temp(:,:,nz) = temp(:,:,nzm)            ! Adiabatic 
+        co2(:,:,nz) = co2(:,:,nzm)              ! Zero flux 
+        h2o(:,:,nz) = h2o(:,:,nzm)              ! Zero flux 
+
+        do k=oxcst,oxcen
+            vx(k,:,nz)   =  2.0d0*vx(k,:,nzm)   - vx(k,:,nzm-1)
+            temp(k,:,nz) =  2.0d0*temp(k,:,nzm) - temp(k,:,nzm-1)
+            co2(k,:,nz)  =  2.0d0*co2(k,:,nzm)  - co2(k,:,nzm-1)
+            h2o(k,:,nz)  =  2.0d0*h2o(k,:,nzm)  - h2o(k,:,nzm-1)
         end do
 
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            ! if ((xm(k).gt.(oheight-(0.5d0*olen))).and.(xm(k).lt.(oheight+(0.5d0*olen)))) then
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vy
-                vy(k,:,nz) = c11*outvy(k,:) - c22*vy(k,:,nzm)
-                ! Apply outflow boundary condition for vz
-                ! This is different because it lies directly on the outlet instead of half a grid cell away
-                vz(k,:,nz) = outvz(k,:)
-                ! vz(k,:,nz) = vz(k,:,nzm)
-            else
-                ! Apply dirchlet boundary condition for vy on wall
-                vy(k,:,nz) = -vy(k,:,nzm)
-                ! Apply dirchlet boundary condition for vz on wall
-                vz(k,:,nz) = 0.0d0
-            end if
+        do k=oxfst,oxfen
+            vy(k,:,nz)   =  2.0d0*vy(k,:,nzm)   - vy(k,:,nzm-1)
+            vz(k,:,nz)   =  2.0d0*vz(k,:,nzm)   - vz(k,:,nzm-1)
+            ! vy(k,:,nz)   = (2.0d0*vy(k,:,nzm)   - vy(k,:,nzm-1))*ocell(k) + (-vy(k,:,nzm))*(1.0d0-ocell(k))
+            ! vz(k,:,nz)   = (2.0d0*vz(k,:,nzm)   - vz(k,:,nzm-1))*ocell(k)
         end do
-
     end if
             
-end subroutine SetOutletBC_RK3
+end subroutine SetOutletBC
 
 subroutine CorrectOutletFlux
 
     use param
     use decomp_2d, only: xstart,xend
     use local_arrays
-    use ventilation_arrays
+    use vent_arrays
     use mpih
 
     implicit none
 
     integer :: j,k
-    real    :: inlet_flux,inlet_area,outlet_flux,outlet_area
-    real    :: cell_ratio,res_dummy
+    real    :: res_dummy
 
-    !Get the outlet flux
-    inlet_area  = ilen*ylen
-    inlet_flux  = ivel*inlet_area
-    outlet_area = 0.0d0
-    outlet_flux = 0.0d0
-    if (xend(3).eq.nzm) then
+    !Get the inlet flux
+    iflux = 0.0d0
+    if (xstart(3).eq.1) then
         do k=1,nxm
             do j=xstart(2),xend(2)
-                ! if ((xm(k).gt.(oheight-(0.5d0*olen))).and.(xm(k).lt.(oheight+(0.5d0*olen)))) then
-                if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                    outlet_flux = outlet_flux + (vz(k,j,nz)*dx3c(k)/(dx*dy))        ! Compute vz outlet flux
-                    outlet_area = outlet_area + (dx3c(k)/(dx*dy))                   ! Compute outlet area
-                end if
+                iflux = iflux + (vz(k,j,1)*dx3c(k)/(dx*dy))
             end do
         end do
     end if
 
-    call MpiAllSumRealScalar(outlet_flux,res_dummy)
-    outlet_flux = res_dummy
+    call MpiAllSumRealScalar(iflux,res_dummy)
+    iflux = res_dummy
 
-    call MpiAllSumRealScalar(outlet_area,res_dummy)
-    outlet_area = res_dummy
+    !Get the outlet flux
+    oflux = 0.0d0
+    if (xend(3).eq.nzm) then
+        do k=1,nxm
+            do j=xstart(2),xend(2)
+                oflux = oflux + (vz(k,j,nz)*dx3c(k)/(dx*dy))
+            end do
+        end do
+    end if
+
+    call MpiAllSumRealScalar(oflux,res_dummy)
+    oflux = res_dummy
 
     ! Correct the outlet flux
     if (xend(3).eq.nzm) then
-        do k=1,nxm
-            ! if ((xm(k).gt.(oheight-(0.5d0*olen))).and.(xm(k).lt.(oheight+(0.5d0*olen)))) then
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                vz(k,:,nz) = vz(k,:,nz) + ((inlet_flux - outlet_flux)/outlet_area)    ! Correct vz outlet flux
-                ! vz(k,:,nz) = (inlet_flux)/outlet_area    ! Correct vz outlet flux
-            end if
+        do k=oxfst,oxfen
+            do j=xstart(2),xend(2)
+                vz(k,j,nz) = vz(k,j,nz) + (ocell(k)*(iflux-oflux)/oarea)
+            end do
         end do
     end if
 
@@ -287,60 +265,12 @@ subroutine CorrectOutletFlux
             'Time','Step','InFlux','InArea','OutFlux','OutArea','Correction'
         end if
         write(100,'((E14.6,X),(I14,X),5(E14.6,X))') &
-        time,ntime,inlet_flux,inlet_area,outlet_flux,outlet_area,((inlet_flux - outlet_flux)/outlet_area)
+        time,ntime,iflux,iarea,oflux,oarea,((iflux - oflux)/oarea)
         close(100)
     end if
     ! DEBUG PURPOSES ==============================================================================
 
 end subroutine CorrectOutletFlux
-
-subroutine CopyOutletBC
-
-    ! This subroutine is required to ensure that the outlet B.C.s are not
-    ! replaced after a halo copy at the end of the time marcher scheme
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    if (xend(3).eq.nzm) then
-        outvx(:,:)   = vx(:,:,nz)
-        outvy(:,:)   = vy(:,:,nz)
-        outvz(:,:)   = vz(:,:,nz)
-        outtemp(:,:) = temp(:,:,nz)
-        outco2(:,:)  = co2(:,:,nz)
-        outh2o(:,:)  = h2o(:,:,nz)
-    end if
-
-end subroutine CopyOutletBC
-
-subroutine PasteOutletBC
-
-    ! This subroutine is required to ensure that the outlet B.C.s are not
-    ! replaced after a halo copy at the end of the time marcher scheme
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    if (xend(3).eq.nzm) then
-        vx(:,:,nz)   = outvx(:,:)
-        vy(:,:,nz)   = outvy(:,:)
-        vz(:,:,nz)   = outvz(:,:)
-        temp(:,:,nz) = outtemp(:,:)
-        co2(:,:,nz)  = outco2(:,:)
-        h2o(:,:,nz)  = outh2o(:,:)
-    end if
-
-end subroutine PasteOutletBC
 
 subroutine SetPressureBC
 
@@ -390,7 +320,7 @@ subroutine SetDebugWallBCs
     ! Just plain side walls, no vents
     if (xstart(2).eq.1) then
         vx(:,0,:) = -vx(:,1,:)                  ! Dirchlet condition
-        vy(:,1,:) = 0.0d0                        ! Dirchlet condition
+        vy(:,1,:) = 0.0d0                       ! Dirchlet condition
         vz(:,0,:) = -vz(:,1,:)                  ! Dirchlet condition
         temp(:,0,:) = temp(:,1,:)               ! Adiabatic
         co2(:,0,:) = co2(:,1,:)                 ! Zero flux
@@ -429,224 +359,4 @@ subroutine SetDebugWallBCs
     return
     
 end subroutine SetDebugWallBCs
-
-subroutine CalcOutletBC_CKN
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-
-    ! Wall with outlet vent
-    if (xend(3).eq.nzm) then
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Handy hack to avoid halo update for out quantities
-                ! Radiative outflow boundary condition for vx
-                outvx(k,:) = (vx(k,:,nz) + vx(k,:,nzm))*0.5d0
-                dzoutvx(k,:) = (vx(k,:,nz) - vx(k,:,nzm))*dz
-                ! Radiative outflow boundary condition for temp
-                outtemp(k,:) = (temp(k,:,nz) + temp(k,:,nzm))*0.5d0
-                dzouttemp(k,:) = (temp(k,:,nz) - temp(k,:,nzm))*dz
-                ! Radiative outflow boundary condition for co2
-                outco2(k,:) = (co2(k,:,nz) + co2(k,:,nzm))*0.5d0
-                dzoutco2(k,:) = (co2(k,:,nz) - co2(k,:,nzm))*dz
-                ! Radiative outflow boundary condition for h2o
-                outh2o(k,:) = (h2o(k,:,nz) + h2o(k,:,nzm))*0.5d0
-                dzouth2o(k,:) = (h2o(k,:,nz) - h2o(k,:,nzm))*dz
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Radiative outflow boundary condition for vy
-                outvy(k,:) = (vy(k,:,nz) + vy(k,:,nzm))*0.5d0
-                dzoutvy(k,:) = (vy(k,:,nz) - vy(k,:,nzm))*dz
-                ! Radiative outflow boundary condition for vz
-                ! This is different because it lies on the outlet instead of half a grid cell away
-                outvz(k,:) = vz(k,:,nz)
-                dzoutvz(k,:) = (vz(k,:,nz) - vz(k,:,nzm))*dz ! This is a bit inaccurate, but this is the best we can do :'(   -[GSY]
-            end if
-        end do
-    end if
-
-    return
-    
-end subroutine CalcOutletBC_CKN
-
-subroutine SetOutletBC_CKN
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-    real    :: inlet_flux, inlet_area, outlet_flux, outlet_area
-    real    :: cou,res_dummy
-
-    ! Apparently this is somehow related to the Courant number and determines the speed of 
-    ! the Courant waves. Not sure why this is a fixed number instead of parameter*(delta_z/delta_t)
-    ! Any disturbance at the outlet which travels in waves slower than this speed gets advected out
-    ! Also called radiative/advective/non-reflecting boundary condition
-    cou = 0.3d0
-
-    ! Wall with outlet vent
-    if (xend(3).eq.nzm) then
-        vx(:,:,nz) = -vx(:,:,nzm)               ! Dirchlet condition
-        vy(:,:,nz) = -vy(:,:,nzm)               ! Dirchlet condition
-        vz(:,:,nz) = 0.0d0                      ! Dirchlet condition
-        temp(:,:,nz) = temp(:,:,nzm)            ! Adiabatic 
-        co2(:,:,nz) = co2(:,:,nzm)              ! Zero flux 
-        h2o(:,:,nz) = h2o(:,:,nzm)              ! Zero flux 
-
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vx
-                vx(k,:,nz) = (((2.0d0*outvx(k,:) - vx(k,:,nzm))/dt) + (cou*(vx(k,:,nzm)*dz - dzoutvx(k,:))))/(1.0d0/dt + cou*dz)
-                ! Apply outflow boundary condition for temp
-                temp(k,:,nz) = (((2.0d0*outtemp(k,:) - temp(k,:,nzm))/dt) + (cou*(temp(k,:,nzm)*dz - dzouttemp(k,:))))/(1.0d0/dt + cou*dz)
-                ! Apply outflow boundary condition for co2
-                co2(k,:,nz) = (((2.0d0*outco2(k,:) - co2(k,:,nzm))/dt) + (cou*(co2(k,:,nzm)*dz - dzoutco2(k,:))))/(1.0d0/dt + cou*dz)
-                ! Apply outflow boundary condition for h20
-                h2o(k,:,nz) = (((2.0d0*outh2o(k,:) - h2o(k,:,nzm))/dt) + (cou*(h2o(k,:,nzm)*dz - dzouth2o(k,:))))/(1.0d0/dt + cou*dz)
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vy
-                vy(k,:,nz) = (((2.0d0*outvy(k,:) - vy(k,:,nzm))/dt) + (cou*(vy(k,:,nzm)*dz - dzoutvy(k,:))))/(1.0d0/dt + cou*dz)
-                ! Apply outflow boundary condition for vz
-                ! This is different because it lies directly on the outlet instead of half a grid cell away
-                vz(k,:,nz) = ((2.0d0*outvz(k,:)/dt) + (cou*(vz(k,:,nzm)*dz - dzoutvz(k,:))))/(2.0d0/dt + cou*dz)
-            end if
-        end do
-
-    end if
-            
-end subroutine SetOutletBC_CKN
-
-subroutine CalcOutletBC_CKN_UPWIND
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-
-    ! Wall with outlet vent
-    if (xend(3).eq.nzm) then
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Handy hack to avoid halo update for out quantities
-                ! Radiative outflow boundary condition for vx
-                outvx(k,:) = vx(k,:,nz)
-                dzoutvx(k,:) = (vx(k,:,nz) - vx(k,:,nzm))
-                ! Radiative outflow boundary condition for temp
-                outtemp(k,:) = temp(k,:,nz)
-                dzouttemp(k,:) = (temp(k,:,nz) - temp(k,:,nzm))
-                ! Radiative outflow boundary condition for co2
-                outco2(k,:) = co2(k,:,nz)
-                dzoutco2(k,:) = (co2(k,:,nz) - co2(k,:,nzm))
-                ! Radiative outflow boundary condition for h2o
-                outh2o(k,:) = h2o(k,:,nz)
-                dzouth2o(k,:) = (h2o(k,:,nz) - h2o(k,:,nzm))
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Radiative outflow boundary condition for vy
-                outvy(k,:) = vy(k,:,nz)
-                dzoutvy(k,:) = (vy(k,:,nz) - vy(k,:,nzm))
-                ! Radiative outflow boundary condition for vz
-                ! This is different because it lies on the outlet instead of half a grid cell away
-                outvz(k,:) = vz(k,:,nz)
-                dzoutvz(k,:) = (vz(k,:,nz) - vz(k,:,nzm)) 
-                ! This is a bit inaccurate, but this is the best we can do :'(   -[GSY]
-            end if
-        end do
-    end if
-
-    return
-    
-end subroutine CalcOutletBC_CKN_UPWIND
-
-subroutine SetOutletBC_CKN_UPWIND
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ventilation_arrays
-    use mpih
-
-    implicit none
-
-    integer :: i,j,k
-    real    :: inlet_flux, inlet_area, outlet_flux, outlet_area
-    real    :: cou,bet,res_dummy
-
-    ! Apparently this is somehow related to the Courant number and determines the speed of 
-    ! the Courant waves. Not sure why this is a fixed number instead of parameter*(delta_z/delta_t)
-    ! Any disturbance at the outlet which travels in waves slower than this speed gets advected out
-    ! Also called radiative/advective/non-reflecting boundary condition
-    cou = limitCFL
-    bet = 0.5*cou*al*dt*dz
-
-    ! Wall with outlet vent
-    if (xend(3).eq.nzm) then
-        vx(:,:,nz) = -vx(:,:,nzm)               ! Dirchlet condition
-        vy(:,:,nz) = -vy(:,:,nzm)               ! Dirchlet condition
-        vz(:,:,nz) = 0.0d0                      ! Dirchlet condition
-        temp(:,:,nz) = temp(:,:,nzm)            ! Adiabatic 
-        co2(:,:,nz) = co2(:,:,nzm)              ! Zero flux 
-        h2o(:,:,nz) = h2o(:,:,nzm)              ! Zero flux 
-
-        do k=1,nx
-            ! Check if the node lies within the outlet dimensions
-            if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vx
-                vx(k,:,nz) = (outvx(k,:) + (bet*(vx(k,:,nzm) - dzoutvx(k,:))))/(1.0d0 + bet)
-                ! Apply outflow boundary condition for temp
-                temp(k,:,nz) = (outtemp(k,:) + (bet*(temp(k,:,nzm) - dzouttemp(k,:))))/(1.0d0 + bet)
-                ! Apply outflow boundary condition for co2
-                co2(k,:,nz) = (outco2(k,:) + (bet*(co2(k,:,nzm) - dzoutco2(k,:))))/(1.0d0 + bet)
-                ! Apply outflow boundary condition for h20
-                h2o(k,:,nz) = (outh2o(k,:) + (bet*(h2o(k,:,nzm) - dzouth2o(k,:))))/(1.0d0 + bet)
-            end if
-        end do
-
-        do k=1,nxm
-            ! Check for any overlap of grid cell with outlet
-            if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
-                ! Apply outflow boundary condition for vy
-                vy(k,:,nz) = (outvy(k,:) + (bet*(vy(k,:,nzm) - dzoutvy(k,:))))/(1.0d0 + bet)
-                ! Apply outflow boundary condition for vz
-                ! This is different because it lies directly on the outlet instead of half a grid cell away
-                vz(k,:,nz) = (outvz(k,:) + (bet*(vz(k,:,nzm) - dzoutvz(k,:))))/(1.0d0 + bet)
-            end if
-        end do
-
-    end if
-            
-end subroutine SetOutletBC_CKN_UPWIND
 ! ********** DEBUG ROUTINES **********

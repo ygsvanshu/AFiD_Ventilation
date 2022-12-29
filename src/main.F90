@@ -3,7 +3,8 @@ program AFiD
 	use mpih
 	use param
 	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr
-	use ventilation_arrays, only: ibm_body,ibm_breath
+	use ibm_arrays
+	use vent_arrays
 	use decomp_2d
 	use decomp_2d_fft
 	use stat_arrays, only: nstatsamples,tstat,tinterval
@@ -29,14 +30,11 @@ program AFiD
 	integer :: progress_eta_h 	!! Hours
 	integer :: progress_eta_m 	!! Minutes
 	integer :: progress_eta_s 	!! Seconds
-	
-	character*50	:: filnam,filename,dsetname
-	logical :: fexist
 
-!*******************************************************
-!******* Read input file bou.in by all processes********
-!*******************************************************
-!
+	!*******************************************************
+	!******* Read input file bou.in by all processes********
+	!*******************************************************
+
 	call ReadInputFile
 
 	if (command_argument_count().eq.2) then
@@ -144,6 +142,17 @@ program AFiD
 	time=0.d0
 
 	call InitPressureSolver
+	call InitVents	! Initialize vent indices and cell areas
+
+	if (person_on) then
+		call CreateBodyIBM
+		call update_halo(ibm_body,lvlhalo)
+	end if
+
+	if (breath_on) then
+		call CreateBreathIBM
+		call update_halo(ibm_breath,lvlhalo)
+	end if
 
 	if(readflow) then
 		if(ismaster) write(6,*) 'Reading initial condition from file'
@@ -155,7 +164,16 @@ program AFiD
         time=0.d0
         instCFL=0.d0
         call CreateInitialConditions
+		call SetOutletBC
 	endif
+
+	call CorrectOutletFlux
+	! Use the computed flux and start time to slowly ramp up 
+	! the inlet velocity. This is taken care in SetInletBC
+	isvel = iflux/iarea
+	tsvel = time
+	call SetInletBC
+	call SetWallBCs
 
 	! Init tstat
 	if(statcalc) then
@@ -170,21 +188,13 @@ program AFiD
 
 	if (savemovie) call InitMovie
 
-	! call CreateDebugBodyIBM
-	! call CreateBodyIBM
-	! call CreateBreathIBM
-
 	call update_halo(vx,lvlhalo)
 	call update_halo(vy,lvlhalo)
 	call update_halo(vz,lvlhalo)
 	call update_halo(temp,lvlhalo)
 	call update_halo(co2,lvlhalo)
 	call update_halo(h2o,lvlhalo)
-
 	call update_halo(pr,lvlhalo)
-
-	call update_halo(ibm_body,lvlhalo)
-    call update_halo(ibm_breath,lvlhalo)
 
 	!EP   Check divergence. Should be reduced to machine precision after the first
 	!phcalc. Here it can still be high.
@@ -228,17 +238,21 @@ program AFiD
 		!EP   Determine timestep size
         call CalcMaxCFL(instCFL)
 
-        if(variabletstep) then
-			if(ntime.gt.0) then
-				if(instCFL.lt.1.0d-8) then !EP prevent fp-overflow
-				dt=dtmax
+        if (variabletstep) then
+			if (ntime.gt.0) then
+				if (instCFL.lt.1.0d-8) then !EP prevent fp-overflow
+					dt=dtmax
 				else
-				dt=limitCFL/instCFL
+					dt=limitCFL/instCFL
 				endif
-				if(dt.gt.dtmax) dt=dtmax
 			else
-				dt=dtmin
+				if (readflow) then
+					dt=limitCFL/instCFL
+				else
+					dt=dtmin
+				end if
 			endif
+			if(dt.gt.dtmax) dt=dtmax
             if(dt.lt.dtmin) errorcode = 166
         else  
 			!RO! fixed time-step

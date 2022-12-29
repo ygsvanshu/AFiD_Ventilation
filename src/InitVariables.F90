@@ -13,7 +13,8 @@ subroutine InitVariables
     use param
     use local_arrays
     use stat_arrays
-    use ventilation_arrays
+    use ibm_arrays
+    use vent_arrays
     use decomp_2d
     use AuxiliaryRoutines
 
@@ -37,10 +38,8 @@ subroutine InitVariables
     call AllocateReal1DArray(xm,1,nx)
     call AllocateReal1DArray(g3rc,1,nx)
     call AllocateReal1DArray(g3rm,1,nx)
-    ! =ModR10=Robert=2020-11-02=====================================================
-    call AllocateReal1DArray(dx3c,1,nx) ! Additional Grid parameters
-    call AllocateReal1DArray(dx3m,1,nx) ! Additional Grid parameters
-    ! =End=of=ModR10================================================================
+    call AllocateReal1DArray(dx3c,1,nx)
+    call AllocateReal1DArray(dx3m,1,nx)
 
     call AllocateReal1DArray(udx3c,1,nx)
     call AllocateReal1DArray(udx3m,1,nx)
@@ -66,7 +65,6 @@ subroutine InitVariables
     call AllocateInt1dArray(kmv,1,nx)
     call AllocateInt1dArray(kpv,1,nx)
 
-    ! =ModV13=Vanshu=2020=11=12======================================================
     call AllocateReal1dArray(dcpdxc,1,nx)
     call AllocateReal1dArray(dccdxc,1,nx)
     call AllocateReal1dArray(dcmdxc,1,nx)
@@ -74,14 +72,17 @@ subroutine InitVariables
     call AllocateReal1dArray(dcpdxm,1,nx)
     call AllocateReal1dArray(dccdxm,1,nx)
     call AllocateReal1dArray(dcmdxm,1,nx)
-    ! =End=of=ModV13================================================================
+
+    !-------------------------------------------------
+    ! Arrays for vents  
+    !-------------------------------------------------
+
+    call AllocateReal1dArray(icell,1,nxm)
+    call AllocateReal1dArray(ocell,1,nxm)
 
     !-------------------------------------------------
     ! Arrays for statistics    
     !-------------------------------------------------
-
-    !! Modified on 10/02/2020 by Vanshu [Modification #16]
-    !! Copied from earlier version on 31/12/2019 by Vanshu [Modification #2]
 
     if (statcalc) then
         ! X-CUT
@@ -173,20 +174,6 @@ subroutine InitVariables
 
     end if
 
-    call AllocateReal2DArray(outvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outtemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(outh2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-
-    call AllocateReal2DArray(dzoutvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzouttemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzoutco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-    call AllocateReal2DArray(dzouth2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
-
     !-------------------------------------------------
     ! Arrays with ghost cells
     !-------------------------------------------------
@@ -199,9 +186,11 @@ subroutine InitVariables
     call AllocateReal3DArray(h2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     call AllocateReal3DArray(dphhalo,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     
-    ! For IBM of person body and breath
-    call AllocateReal3DArray(ibm_body,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
-    call AllocateReal3DArray(ibm_breath,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
+    !-------------------------------------------------
+    ! Arrays for IBM mask
+    !-------------------------------------------------
+    call AllocateReal3DArray(ibm_body,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
+    call AllocateReal3DArray(ibm_breath,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
 
     !-----------------------------------------------
     ! Arrays without ghost cells

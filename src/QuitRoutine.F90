@@ -58,7 +58,7 @@ subroutine QuitRoutine(tin,normalexit,errorcode)
         else
             call MPI_Abort(MPI_COMM_WORLD,1)
         endif
-
+        
         call DeallocateVariables
         call HdfClose
         call decomp_2d_fft_finalize
