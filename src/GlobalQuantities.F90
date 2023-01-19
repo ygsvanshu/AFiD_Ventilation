@@ -302,8 +302,8 @@ subroutine GlobalQuantities
         open(96,file='Results/out_stats.out',status='unknown',position='append',access='sequential')
         if ((ntime.eq.0).and.(.not.readflow)) then
             write(96,'(13(A14,X))') &
-            'Time','Conv Flux Vx','Conv Flux Vy','Conv Flux Vz','Conv Flux Temp','Conv Flux CO2','Conv Flux H2O',&
-            'Diff Flux Vx','Diff Flux Vy','Diff Flux Vz','Diff Flux Temp','Diff Flux CO2','Diff Flux H2O'
+            'Time','Conv_Flux_Vx','Conv_Flux_Vy','Conv_Flux_Vz','Conv_Flux_Temp','Conv_Flux_CO2','Conv_Flux_H2O',&
+            'Diff_Flux_Vx','Diff_Flux_Vy','Diff_Flux_Vz','Diff_Flux_Temp','Diff_Flux_CO2','Diff_Flux_H2O'
         end if
         write(96,'(13(E14.6,X))') &
         time,c_outflux_vx,c_outflux_vy,c_outflux_vz,c_outflux_temp,c_outflux_co2,c_outflux_h2o,&

@@ -28,57 +28,56 @@ subroutine ImplicitAndUpdateVY
       alre=al/ren
       udy=dy*al
 
-!$OMP   PARALLEL DO &
-!$OMP   DEFAULT(none) &
-!$OMP   SHARED(xstart,xend,nxm,vy,pr) &
-!$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk) &
-!$OMP   SHARED(dy,al,ga,ro,alre,dt,dph) &
-!$OMP   SHARED(udy,udx3m,rhs,ruy) &
-!$OMP   PRIVATE(ic,jc,kc,kmm,kpp,jmm) &
-!$OMP   PRIVATE(amm,acc,app) &
-!$OMP   PRIVATE(dyp,dxxvy)
+    !$OMP   PARALLEL DO &
+    !$OMP   DEFAULT(none) &
+    !$OMP   SHARED(xstart,xend,nxm,vy,pr) &
+    !$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk) &
+    !$OMP   SHARED(dy,al,ga,ro,alre,dt,dph) &
+    !$OMP   SHARED(udy,udx3m,rhs,ruy) &
+    !$OMP   PRIVATE(ic,jc,kc,kmm,kpp,jmm) &
+    !$OMP   PRIVATE(amm,acc,app) &
+    !$OMP   PRIVATE(dyp,dxxvy)
 
-      do ic=xstart(3),xend(3)
-            do jc=xstart(2),xend(2)
-                  jmm=jc-1
-                  do kc=1,nxm
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            jmm=jc-1
+            do kc=1,nxm
 
-                        kmm=kmv(kc)
-                        kpp=kpv(kc)
-                        amm=am3sk(kc)
-                        acc=ac3sk(kc)
-                        app=ap3sk(kc)
+                kmm=kmv(kc)
+                kpp=kpv(kc)
+                amm=am3sk(kc)
+                acc=ac3sk(kc)
+                app=ap3sk(kc)
 
+                !   Second derivative in x-direction of vy
+                
+                if (kc.eq.1) then
+                    dxxvy = vy(kpp,jc,ic)*app + vy(kc,jc,ic)*acc + 0.d0*amm
+                else if (kc.eq.nxm) then
+                    dxxvy = 0.0*app + vy(kc,jc,ic)*acc + vy(kmm,jc,ic)*amm
+                else
+                    dxxvy = vy(kpp,jc,ic)*app + vy(kc,jc,ic)*acc + vy(kmm,jc,ic)*amm
+                end if
 
-!   Second derivative in x-direction of vy
-!
-                        if (kc.eq.1) then
-                              dxxvy = vy(kpp,jc,ic)*app + vy(kc,jc,ic)*acc + 0.d0*amm
-                        else if (kc.eq.nxm) then
-                              dxxvy = 0.0*app + vy(kc,jc,ic)*acc + vy(kmm,jc,ic)*amm
-                        else
-                              dxxvy = vy(kpp,jc,ic)*app + vy(kc,jc,ic)*acc + vy(kmm,jc,ic)*amm
-		            end if
+                !   component of grad(pr) along y direction
 
-!   component of grad(pr) along y direction
-!
-                        dyp = (pr(kc,jc,ic)-pr(kc,jmm,ic))*udy
+                dyp = (pr(kc,jc,ic)-pr(kc,jmm,ic))*udy
 
-!    Calculate right hand side of Eq. 5 (VO96)
-!
-                        rhs(kc,jc,ic) = (ga*dph(kc,jc,ic) + ro*ruy(kc,jc,ic) + alre*dxxvy-dyp)*dt
+                !    Calculate right hand side of Eq. 5 (VO96)
 
-!    Store the non-linear terms for the calculation of 
-!    the next timestep
+                rhs(kc,jc,ic) = (ga*dph(kc,jc,ic) + ro*ruy(kc,jc,ic) + alre*dxxvy-dyp)*dt
 
-                        ruy(kc,jc,ic)=dph(kc,jc,ic)
-                  enddo
+                !    Store the non-linear terms for the calculation of 
+                !    the next timestep
+
+                ruy(kc,jc,ic)=dph(kc,jc,ic)
             enddo
-      enddo
+        enddo
+    enddo
 
-!  Solve equation and update velocity
+    !$OMP END PARALLEL DO
 
-      call SolveImpEqnUpdate_YZ(vy,rhs)
-      
-      return
-      end
+    call SolveImpEqnUpdate_Y
+
+    return
+end

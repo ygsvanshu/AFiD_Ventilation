@@ -46,7 +46,7 @@ subroutine TimeMarcher
         call ImplicitAndUpdateCO2
         call ImplicitAndUpdateH2O
 
-        if (person_on) call AddBodyIBM
+        ! if (person_on) call AddBodyIBM
         if (breath_on) call AddBreathIBM
 
         call update_halo(vx,lvlhalo)
