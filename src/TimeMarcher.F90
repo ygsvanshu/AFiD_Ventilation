@@ -39,16 +39,15 @@ subroutine TimeMarcher
         call ExplicitTermsCO2
         call ExplicitTermsH2O
 
+        if (breath_on) call AddBreathIBM
+
         call ImplicitAndUpdateVX
         call ImplicitAndUpdateVY
         call ImplicitAndUpdateVZ
         call ImplicitAndUpdateTemp
         call ImplicitAndUpdateCO2
         call ImplicitAndUpdateH2O
-
-        ! if (person_on) call AddBodyIBM
-        if (breath_on) call AddBreathIBM
-
+        
         call update_halo(vx,lvlhalo)
         call update_halo(vy,lvlhalo)
         call update_halo(vz,lvlhalo)

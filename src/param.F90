@@ -117,6 +117,7 @@ module local_arrays
     real,allocatable,dimension(:,:,:)   :: pr,temp,co2,h2o,rhs
     real,allocatable,dimension(:,:,:)   :: rux,ruy,ruz,rutemp,ruco2,ruh2o
     real,allocatable,dimension(:,:,:)   :: dph,qcap,dq,hro,dphhalo,qco2,qh2o
+    real,allocatable,dimension(:,:,:)   :: ibm_body
 end module local_arrays
 
 module stat_arrays
@@ -169,11 +170,6 @@ module vent_arrays
     real                                :: iarea,oarea
     real,allocatable,dimension(:)       :: icell,ocell
 end module vent_arrays
-
-module ibm_arrays
-    implicit none
-    real,allocatable,dimension(:,:,:)   :: ibm_body,ibm_breath
-end module ibm_arrays
 
 !=====================================================    
 

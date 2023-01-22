@@ -11,8 +11,7 @@
 subroutine SolveImpEqnUpdate_CO2
 
     use param
-    use local_arrays, only: co2,rhs
-    use ibm_arrays, only: ibm_body
+    use local_arrays, only: co2,rhs,ibm_body
     use decomp_2d, only: xstart,xend
 
     implicit none

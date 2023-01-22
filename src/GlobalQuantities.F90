@@ -11,9 +11,8 @@
 subroutine GlobalQuantities
 
     use param
-    use local_arrays,only: vy,vx,vz,temp,co2,h2o
+    use local_arrays,only: vy,vx,vz,temp,co2,h2o,ibm_body
     use decomp_2d,only: xstart,xend
-    use ibm_arrays,only: ibm_body
     use mpih
 
     implicit none

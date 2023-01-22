@@ -11,8 +11,7 @@
 subroutine SolveImpEqnUpdate_H2O
 
     use param
-    use local_arrays, only : h2o,rhs
-    use ibm_arrays, only: ibm_body
+    use local_arrays, only : h2o,rhs,ibm_body
     use decomp_2d, only: xstart,xend
 
     implicit none

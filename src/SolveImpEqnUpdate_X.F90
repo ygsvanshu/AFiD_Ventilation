@@ -12,8 +12,7 @@
 subroutine SolveImpEqnUpdate_X
 
     use param
-    use local_arrays, only : vx,rhs
-    use ibm_arrays, only: ibm_body
+    use local_arrays, only : vx,rhs,ibm_body
     use decomp_2d, only: xstart,xend
 
     implicit none

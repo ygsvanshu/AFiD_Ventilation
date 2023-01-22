@@ -12,7 +12,7 @@ subroutine CreateBodyIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use ibm_arrays, only: ibm_body
+    use local_arrays, only: ibm_body
     use mpih
 
     implicit none
@@ -127,98 +127,28 @@ subroutine CreateBodyIBM
 
 end subroutine CreateBodyIBM
 
-subroutine AddBodyIBM
+subroutine AddBreathIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ibm_arrays, only: ibm_body
+    ! use local_arrays, only: vx,vy,vz,temp,co2,h2o
+    use local_arrays, only: qcap,dph,dq,hro,qco2,qh2o
     use mpih
 
     implicit none
 
-    integer :: kc,kb,kt,jc,jm,ic,im
-    real    :: ibmx,ibmy,ibmz
+    integer :: kc,jc,ic
+    real    :: time_shift,breath_interval,time_signal,vel_peak,time_signal_exp,space_signal  
+    real    :: tprefactor,sprefactor,qprefactor
+    real    :: injectedvol,injectmeanvx,injectmeanvy,injectmeanvz,injectmeantemp,injectmeanco2,injectmeanh2o
 
-    do ic=xstart(3),xend(3)
-        im = ic-1
-        do jc=xstart(2),xend(2)
-            jm = jc-1
-            do kc=1,nx
-                kt = min(kc,nxm)
-                kb = max(1,kc-1)            
-                ibmx            = ((ibm_body(kb,jc,ic)*dx3c(kb))+(ibm_body(kt,jc,ic)*dx3c(kt)))/(2.0d0*g3rc(kc))
-                vx(kc,jc,ic)    = vx(kc,jc,ic)*(1.0d0-ibmx)   + (0.0d0*ibmx)
-                temp(kc,jc,ic)  = temp(kc,jc,ic)*(1.0d0-ibmx) + (1.0d0*ibmx)
-                co2(kc,jc,ic)   = co2(kc,jc,ic)*(1.0d0-ibmx)  + (0.0d0*ibmx)
-                h2o(kc,jc,ic)   = h2o(kc,jc,ic)*(1.0d0-ibmx)  + (0.0d0*ibmx)
-            end do
-            do kc=1,nxm
-                ibmy            = 0.5d0*(ibm_body(kc,jc,ic)+ibm_body(kc,jm,ic))
-                ibmz            = 0.5d0*(ibm_body(kc,jc,ic)+ibm_body(kc,jc,im))
-                vy(kc,jc,ic)    = vy(kc,jc,ic)*(1.0d0-ibmy)   + (0.0d0*ibmx)
-                vz(kc,jc,ic)    = vz(kc,jc,ic)*(1.0d0-ibmz)   + (0.0d0*ibmx)
-            enddo
-        enddo
-    enddo
-
-    return
-
-end subroutine AddBodyIBM
-
-subroutine CreateBreathIBM
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use ibm_arrays, only: ibm_breath
-    use mpih
-
-    implicit none
-
-    integer         :: kc,jc,ic
-    character*50    :: filnam
-
-    ibm_breath(:,:,:)=0.d0
-
-    ! breathz=0.312
-    ! breathy=0.5d0*ylen
-    ! breathx=0.472
-    do kc=1,nxm
-        do jc=xstart(2),xend(2)
-            do ic=xstart(3),xend(3)
-                ibm_breath(kc,jc,ic)=exp(-0.5*((2.0*(xm(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2+   (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
-            enddo
-        enddo
-    enddo
-
+    ! Check if the breath forcing location is out of the domain volume
     if ((breathx.lt.0.0d0).or.(breathx.gt.alx3).or.(breathy.lt.0.0d0).or.(breathy.gt.ylen).or.(breathz.lt.0.0d0).or.(breathz.gt.zlen)) then
         call NotifyError(667)
         call MPI_Abort(MPI_COMM_WORLD,1) 
     end if
 
-    filnam = trim('ibm_breath.h5')
-    call HdfWriteRealHalo3D(filnam,ibm_breath)
-
-    return
-
-end subroutine CreateBreathIBM
-
-subroutine AddBreathIBM
-
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
-    use ibm_arrays, only: ibm_breath
-    use mpih
-
-    implicit none
-
-    integer :: kc,kb,kt,jc,jm,ic,im
-    real    :: time_shift,breath_interval,time_signal,vel_peak,time_signal_exp
-    real    :: tprefactor,sprefactor,prefactorx,prefactory,prefactorz,ibmx,ibmy,ibmz
-    real    :: injectedvol,injectmeanvx,injectmeanvy,injectmeanvz,injectmeantemp,injectmeanco2,injectmeanh2o
-
-    ! compute injection quantities
+    ! Compute injection quantities
     injectedvol     = 5e-4  /3.0/3.0/3.0       ! normalized 0.5L (by length scale 3m)
     injectmeanvx    = -0.5*dcos(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
     injectmeanvy    = 0.0
@@ -227,7 +157,7 @@ subroutine AddBreathIBM
     injectmeanco2   = 1.0
     injectmeanh2o   = 1.0
 
-    ! set temporal Gaussian func
+    ! Set temporal Gaussian func
     time_shift      = 2.0/4.25             ! normalized 2s (by free fall time 4.25s)
     breath_interval = 4.25/4.25            ! normalized 4.25s (by free fall time 4.25s)
 
@@ -237,28 +167,31 @@ subroutine AddBreathIBM
     time_signal     = tprefactor*time_signal_exp
     sprefactor      = (2.0/(2.0*pi)**0.5)**3.0/kernel_width_space/kernel_width_space/kernel_width_space
 
-    !-- set breath
+    ! Set breath
     do ic=xstart(3),xend(3)
-        im=ic-1
         do jc=xstart(2),xend(2)
-            jm=jc-1
-            do kc=1,nx
-                kt = min(kc,nxm)
-                kb = max(1,kc-1)            
-                ibmx            = ((ibm_breath(kb,jc,ic)*dx3c(kb))+(ibm_breath(kt,jc,ic)*dx3c(kt)))/(2.0d0*g3rc(kc))
-                prefactorx      = (sprefactor*ibmx*injectedvol)*(time_signal*ga*dt)
-                vx(kc,jc,ic)    = vx(kc,jc,ic)   + injectmeanvx*prefactorx
-                temp(kc,jc,ic)  = temp(kc,jc,ic) + injectmeantemp*prefactorx
-                co2(kc,jc,ic)   = co2(kc,jc,ic)  + injectmeanco2*prefactorx
-                h2o(kc,jc,ic)   = h2o(kc,jc,ic)  + injectmeanh2o*prefactorx
+            do kc=1,nx     
+                space_signal    = exp(-0.5*((2.0*(xc(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2 + (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
+                qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
+                ! vx(kc,jc,ic)    = vx(kc,jc,ic)   + injectmeanvx*qprefactor
+                ! temp(kc,jc,ic)  = temp(kc,jc,ic) + injectmeantemp*qprefactor
+                ! co2(kc,jc,ic)   = co2(kc,jc,ic)  + injectmeanco2*qprefactor
+                ! h2o(kc,jc,ic)   = h2o(kc,jc,ic)  + injectmeanh2o*qprefactor
+                qcap(kc,jc,ic)  = qcap(kc,jc,ic) + (injectmeanvx*qprefactor)
+                hro(kc,jc,ic)   = hro(kc,jc,ic)  + (injectmeantemp*qprefactor)
+                qco2(kc,jc,ic)  = qco2(kc,jc,ic) + (injectmeanco2*qprefactor)
+                qh2o(kc,jc,ic)  = qh2o(kc,jc,ic) + (injectmeanh2o*qprefactor)
+
             end do
             do kc=1,nxm
-                ibmy            = 0.5d0*(ibm_breath(kc,jc,ic)+ibm_breath(kc,jm,ic))
-                ibmz            = 0.5d0*(ibm_breath(kc,jc,ic)+ibm_breath(kc,jc,im))
-                prefactory      = (sprefactor*ibmy*injectedvol)*(time_signal*ga*dt)
-                prefactory      = (sprefactor*ibmz*injectedvol)*(time_signal*ga*dt)
-                vy(kc,jc,ic)    = vy(kc,jc,ic)   + injectmeanvy*prefactory
-                vz(kc,jc,ic)    = vz(kc,jc,ic)   + injectmeanvz*prefactorz
+                space_signal    = exp(-0.5*((2.0*(xm(kc)-breathx)/kernel_width_space)**2  + (2.0*(yc(jc)-breathy)/kernel_width_space)**2 + (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
+                qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
+                ! vy(kc,jc,ic)    = vy(kc,jc,ic)   + injectmeanvy*qprefactor
+                dph(kc,jc,ic)   = dph(kc,jc,ic)  + (injectmeanvy*qprefactor)
+                space_signal    = exp(-0.5*((2.0*(xm(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2 + (2.0*(zc(ic)-breathz)/kernel_width_space)**2))
+                qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
+                ! vz(kc,jc,ic)    = vz(kc,jc,ic)   + injectmeanvz*qprefactor
+                dq(kc,jc,ic)    = dq(kc,jc,ic)   + (injectmeanvz*qprefactor)
             enddo
         enddo
     enddo
@@ -273,7 +206,7 @@ subroutine CreateDebugBodyIBM
 
     use param
     use decomp_2d, only: xstart,xend
-    use ibm_arrays, only: ibm_body
+    use local_arrays, only: ibm_body
     use mpih
 
     implicit none
