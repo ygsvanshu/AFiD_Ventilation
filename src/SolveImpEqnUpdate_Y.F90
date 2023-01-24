@@ -44,7 +44,7 @@ subroutine SolveImpEqnUpdate_Y
             apkT = apkl(1:(nxm-1))
             
             call dgttrf(nxm,amkT,ackT,apkT,appk,ipkv,info)
-            call dgttrs('N',nxm,1,amkT,ackT,apkT,appk,ipkv,rx1d,nx,info)
+            call dgttrs('N',nxm,1,amkT,ackT,apkT,appk,ipkv,rx1d,nxm,info)
             
             do kc=1,nxm
                 rhs(kc,jc,ic) = rx1d(kc)
