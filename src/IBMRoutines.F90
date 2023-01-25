@@ -150,9 +150,9 @@ subroutine AddBreathIBM
 
     ! Compute injection quantities
     injectedvol     = 5e-4  /3.0/3.0/3.0       ! normalized 0.5L (by length scale 3m)
-    injectmeanvx    = -0.5*dcos(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    injectmeanvx    = -0.5*dsin(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
     injectmeanvy    = 0.0
-    injectmeanvz    = -0.5*dsin(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    injectmeanvz    = -0.5*dcos(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
     injectmeantemp  = 1.0
     injectmeanco2   = 1.0
     injectmeanh2o   = 1.0
