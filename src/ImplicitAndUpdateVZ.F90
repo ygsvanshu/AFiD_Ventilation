@@ -13,72 +13,72 @@
 
 subroutine ImplicitAndUpdateVZ
 
-      use param
-      use local_arrays, only: vz,dq,ruz,rhs,pr
-      use decomp_2d, only: xstart,xend
+    use param
+    use local_arrays, only: vz,dq,ruz,rhs,pr
+    use decomp_2d, only: xstart,xend
 
-      implicit none
+    implicit none
 
-      integer :: kc,jc,ic,imm
-      integer :: kmm,kpp
-      real    :: alre,amm,acc,app,udz
-      real    :: dxxvz,dzp
+    integer :: kc,jc,ic,imm
+    integer :: kmm,kpp
+    real    :: alre,amm,acc,app,udz
+    real    :: dxxvz,dzp
 
-      alre=al/ren
-      udz=dz*al
+    alre=al/ren
+    udz=dz*al
 
-!$OMP  PARALLEL DO &
-!$OMP   DEFAULT(none) &
-!$OMP   SHARED(xstart,xend,nxm,vz,pr) &
-!$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk) &
-!$OMP   SHARED(dz,al,ga,ro,alre,dt,dq) &
-!$OMP   SHARED(udx3m,rhs,ruz) &
-!$OMP   PRIVATE(ic,jc,kc,imm,kmm,kpp) &
-!$OMP   PRIVATE(amm,acc,app) &
-!$OMP   PRIVATE(dxxvz,dzp)
+    !$OMP   PARALLEL DO &
+    !$OMP   DEFAULT(none) &
+    !$OMP   SHARED(xstart,xend,nxm,vz,pr) &
+    !$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk) &
+    !$OMP   SHARED(dz,al,ga,ro,alre,dt,dq) &
+    !$OMP   SHARED(udx3m,rhs,ruz) &
+    !$OMP   PRIVATE(ic,jc,kc,imm,kmm,kpp) &
+    !$OMP   PRIVATE(amm,acc,app) &
+    !$OMP   PRIVATE(dxxvz,dzp)
 
-      do ic=xstart(3),xend(3)
-            imm=ic-1
-            do jc=xstart(2),xend(2)
-                  do kc=1,nxm
+    do ic=xstart(3),xend(3)
+        imm=ic-1
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
                         
-                        kmm=kmv(kc)
-                        kpp=kpv(kc)
-                        amm=am3sk(kc)
-                        acc=ac3sk(kc)
-                        app=ap3sk(kc)
+                kmm=kmv(kc)
+                kpp=kpv(kc)
+                amm=am3sk(kc)
+                acc=ac3sk(kc)
+                app=ap3sk(kc)
 
-!   Second derivative in x-direction of vz
-!
-                        if (kc.eq.1) then
-                              dxxvz = vz(kpp,jc,ic)*app + vz(kc,jc,ic)*acc + 0.0d0*amm
-                        else if (kc.eq.nxm) then           
-                              dxxvz = 0.0d0*app + vz(kc,jc,ic)*acc + vz(kmm,jc,ic)*amm
-                        else
-                              dxxvz=vz(kpp,jc,ic)*app + vz(kc,jc,ic)*acc + vz(kmm,jc,ic)*amm
-                        end if
+                !   Second derivative in x-direction of vz
+                
+                if (kc.eq.1) then
+                    dxxvz = vz(kpp,jc,ic)*app + vz(kc,jc,ic)*acc + 0.0d0*amm
+                else if (kc.eq.nxm) then           
+                    dxxvz = 0.0d0*app + vz(kc,jc,ic)*acc + vz(kmm,jc,ic)*amm
+                else
+                    dxxvz=vz(kpp,jc,ic)*app + vz(kc,jc,ic)*acc + vz(kmm,jc,ic)*amm
+                end if
       
-!   component of grad(pr) along z direction
-!
-                        dzp=(pr(kc,jc,ic)-pr(kc,jc,imm))*dz*al
+                !   component of grad(pr) along z direction
+                
+                dzp=(pr(kc,jc,ic)-pr(kc,jc,imm))*dz*al
 
-!    Calculate right hand side of Eq. 5 (VO96)
-!
-                        rhs(kc,jc,ic) = (ga*dq(kc,jc,ic) + ro*ruz(kc,jc,ic) + alre*dxxvz-dzp)*dt
+                !    Calculate right hand side of Eq. 5 (VO96)
 
-!    Store the non-linear terms for the calculation of 
-!    the next timestep
+                rhs(kc,jc,ic) = (ga*dq(kc,jc,ic) + ro*ruz(kc,jc,ic) + alre*dxxvz-dzp)*dt
 
-                        ruz(kc,jc,ic)=dq(kc,jc,ic)
+                !    Store the non-linear terms for the calculation of 
+                !    the next timestep
 
-                  enddo
+                ruz(kc,jc,ic)=dq(kc,jc,ic)
+
             enddo
-      enddo
+        enddo
+    enddo
 
-!$OMP END PARALLEL DO
+    !$OMP END PARALLEL DO
 
-      call SolveImpEqnUpdate_YZ(vz,rhs)
+    call SolveImpEqnUpdate_Z
 
-      return
+    return
 
-      end
+    end

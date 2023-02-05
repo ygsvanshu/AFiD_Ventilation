@@ -13,7 +13,6 @@ subroutine CreateInitialConditions
     use param
     use local_arrays, only: vy,vx,vz,temp,co2,h2o
     use decomp_2d, only: xstart,xend
-    use ibm_arrays
     use mpih
 
     implicit none
@@ -37,9 +36,6 @@ subroutine CreateInitialConditions
             enddo
         enddo
     enddo
-
-    if (person_on) call AddBodyIBM
-    if (breath_on) call AddBreathIBM
 
     return
 

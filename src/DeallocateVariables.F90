@@ -13,7 +13,6 @@ subroutine DeallocateVariables
     use param
     use local_arrays
     use stat_arrays
-    use ibm_arrays
     use vent_arrays
     use AuxiliaryRoutines
 
@@ -186,7 +185,6 @@ subroutine DeallocateVariables
     call DestroyReal3DArray(ruh2o)
     
     call DestroyReal3DArray(ibm_body)
-    call DestroyReal3DArray(ibm_breath)
 
     return 
 

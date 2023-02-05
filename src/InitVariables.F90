@@ -13,7 +13,6 @@ subroutine InitVariables
     use param
     use local_arrays
     use stat_arrays
-    use ibm_arrays
     use vent_arrays
     use decomp_2d
     use AuxiliaryRoutines
@@ -185,12 +184,7 @@ subroutine InitVariables
     call AllocateReal3DArray(co2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     call AllocateReal3DArray(h2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     call AllocateReal3DArray(dphhalo,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
-    
-    !-------------------------------------------------
-    ! Arrays for IBM mask
-    !-------------------------------------------------
     call AllocateReal3DArray(ibm_body,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
-    call AllocateReal3DArray(ibm_breath,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
 
     !-----------------------------------------------
     ! Arrays without ghost cells

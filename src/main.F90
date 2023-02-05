@@ -2,8 +2,7 @@ program AFiD
 
 	use mpih
 	use param
-	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr
-	use ibm_arrays
+	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr,ibm_body
 	use vent_arrays
 	use decomp_2d
 	use decomp_2d_fft
@@ -147,11 +146,6 @@ program AFiD
 	if (person_on) then
 		call CreateBodyIBM
 		call update_halo(ibm_body,lvlhalo)
-	end if
-
-	if (breath_on) then
-		call CreateBreathIBM
-		call update_halo(ibm_breath,lvlhalo)
 	end if
 
 	if(readflow) then

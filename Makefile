@@ -76,8 +76,8 @@ FFILES +=   CalcMaxCFL.F90 CalcLocalDivergence.F90\
             MovieRoutines.F90 MpiAuxRoutines.F90 obj_io.F90 QuitRoutine.F90\
             ReadFlowField.F90 ReadInputFile.F90 ReadOutlet.F90 SetWallBCs.F90\
             SolveImpEqnUpdate_CO2.F90 SolveImpEqnUpdate_H2O.F90 SolveImpEqnUpdate_Temp.F90\
-            SolveImpEqnUpdate_X.F90 SolveImpEqnUpdate_YZ.F90 SolvePressureCorrection.F90\
-            StatRoutines.F90 TimeMarcher.F90\
+            SolveImpEqnUpdate_X.F90 SolveImpEqnUpdate_Y.F90 SolveImpEqnUpdate_Z.F90\
+            SolvePressureCorrection.F90 StatRoutines.F90 TimeMarcher.F90\
             WriteFlowField.F90 WriteFlowFieldSnapshot.F90 WriteGridInfo.F90 WriteOutlet.F90\
             factorize.F90 main.F90
 

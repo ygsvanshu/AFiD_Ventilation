@@ -72,7 +72,7 @@ subroutine InitVents
             ixcen       = max(ixcen,k)
         end if
         !Checking for all grid points within the outlet
-        if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
+        if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
             oxcst       = min(oxcst,k)
             oxcen       = max(oxcen,k)
         end if
