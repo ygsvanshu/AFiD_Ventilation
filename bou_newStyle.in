@@ -54,7 +54,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
     (This quantity should be positive)
 505 Inlet vent dimension and height          ILEN IHEIGHT       '0.1' '0.95'
 506 Outlet vent dimension and height         OLEN OHEIGHT       '0.1' '0.05'
-507 Ventilation airflow velocity             IVEL TVEL          '1.57e-2' '1'
+507 Ventilation airflow velocity             IVEL TVEL          '1.57e-1' '1'
 508 Person and breath enabled (y/n)          PERSON BREATH      'y' 'y'
 509 Person geometry OBJfile                  OBJFILE            'bodies/sittingwoman03.obj' 
 510 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
