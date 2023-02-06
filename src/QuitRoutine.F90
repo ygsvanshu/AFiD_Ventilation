@@ -15,7 +15,6 @@ subroutine QuitRoutine(tin,normalexit,errorcode)
     use param
     use decomp_2d, only: nrank, decomp_2d_finalize
     use decomp_2d_fft
-    use implicit_decomp
 
     implicit none
     logical, intent(in) :: normalexit
@@ -66,7 +65,6 @@ subroutine QuitRoutine(tin,normalexit,errorcode)
         
         call DeallocateVariables
         call HdfClose
-        call decomp_info_finalize(decomp_diff)
         call decomp_2d_fft_finalize
         call decomp_2d_finalize
 
