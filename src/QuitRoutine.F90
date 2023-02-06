@@ -56,10 +56,6 @@ subroutine QuitRoutine(tin,normalexit,errorcode)
             call WriteFlowField
             call WriteOutlet
         else
-            call Movie_xcut(errorcode)
-            call Movie_ycut(errorcode)
-            call Movie_zcut(errorcode)
-            call Movie_outlet(errorcode)
             call MPI_Abort(MPI_COMM_WORLD,1)
         endif
         
