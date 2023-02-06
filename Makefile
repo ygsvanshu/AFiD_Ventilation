@@ -18,6 +18,9 @@ FC += -r8 -Ofast
 #FC += -axCORE-AVX512 
 #FC += -xAVX -axCORE-AVX2
 
+## Irene
+FC += -mtune=skylake $(FFTW3_FFLAGS)
+
 #--------------------------------------------------------------
 # System specific libaries
 #--------------------------------------------------------------
@@ -41,8 +44,13 @@ BLAS_FLAGS = -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread
 # HDF5_FLAGS = -lhdf5_fortran -lhdf5  -lsz -lz -ldl -lm
 HDF5_FLAGS = -lhdf5_fortran -lhdf5 -lz -ldl -lm
 
-#LDFLAGS = $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
-LDFLAGS = -I$(MPI_BASE)/include $(FFTW_MPI_SHLIB) $(BLAS_FLAGS) $(HDF5_FLAGS) #-qmkl=sequential
+# Irene
+FFTW3_FLAGS = $(FFTW3_LDFLAGS)
+BLAS_FLAGS = $(MKL_LDFLAGS)
+HDF5_FLAGS = -ldl
+
+LDFLAGS = $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
+#LDFLAGS = -I$(MPI_BASE)/include $(FFTW_MPI_SHLIB) $(BLAS_FLAGS) $(HDF5_FLAGS) #-qmkl=sequential
 #LDFLAGS = -L$(LD_LIBRARY_PATH) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
 #LDFLAGS = -L$(LD_LIBRARY_PATH) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS) -mkl=parallel
 #LDFLAGS = $(FFTW3_LIB) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
