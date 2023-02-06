@@ -12,6 +12,7 @@ subroutine DeallocateVariables
 
     use param
     use local_arrays
+    use ibm_arrays
     use stat_arrays
     use vent_arrays
     use AuxiliaryRoutines
@@ -69,6 +70,13 @@ subroutine DeallocateVariables
 
     call DestroyReal1dArray(icell)
     call DestroyReal1dArray(ocell)
+
+    call DestroyReal2DArray(outvx)
+    call DestroyReal2DArray(outvy)
+    call DestroyReal2DArray(outvz)
+    call DestroyReal2DArray(outtemp)
+    call DestroyReal2DArray(outco2)
+    call DestroyReal2DArray(outh2o)
 
     if (statcalc) then
         ! X-CUT
@@ -167,7 +175,10 @@ subroutine DeallocateVariables
     call DestroyReal3DArray(h2o)
 
     call DestroyReal3DArray(pr)
-    call DestroyReal3DArray(rhs)
+
+    call DestroyReal3DArray(rhsx)
+    call DestroyReal3DArray(rhsy)
+    call DestroyReal3DArray(rhsz)
 
     call DestroyReal3DArray(dq)
     call DestroyReal3DArray(qcap)
@@ -184,7 +195,19 @@ subroutine DeallocateVariables
     call DestroyReal3DArray(ruco2)
     call DestroyReal3DArray(ruh2o)
     
-    call DestroyReal3DArray(ibm_body)
+    call DestroyLogical3DArray(ibm_gc_px)
+
+    call DestroyLogical3DArray(ibm_gx_px)
+    call DestroyLogical3DArray(ibm_gy_px)
+    call DestroyLogical3DArray(ibm_gz_px)
+
+    call DestroyLogical3DArray(ibm_gx_py)
+    call DestroyLogical3DArray(ibm_gy_py)
+    call DestroyLogical3DArray(ibm_gz_py)
+
+    call DestroyLogical3DArray(ibm_gx_pz)
+    call DestroyLogical3DArray(ibm_gy_pz)
+    call DestroyLogical3DArray(ibm_gz_pz)
 
     return 
 

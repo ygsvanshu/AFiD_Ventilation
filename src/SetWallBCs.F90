@@ -72,7 +72,7 @@ subroutine InitVents
             ixcen       = max(ixcen,k)
         end if
         !Checking for all grid points within the outlet
-        if ((xc(k+1).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
+        if ((xc(k).gt.(oheight-(0.5d0*olen))).and.(xc(k).lt.(oheight+(0.5d0*olen)))) then
             oxcst       = min(oxcst,k)
             oxcen       = max(oxcen,k)
         end if
@@ -84,72 +84,96 @@ subroutine SetWallBCs
 
     use param
     use decomp_2d, only: xstart,xend
-    use local_arrays
+    use local_arrays, only: vx,vy,vz,temp,co2,h2o
+    use vent_arrays
     use mpih
 
     implicit none
 
+    ! Top and bottom walls (X=0,X=ALX3D)
     vx(1,:,:) = 0.d0
     vx(nx,:,:) = 0.d0
 
-    ! Just plain side walls, no vents
+    ! Side walls without vents (Y=0,Y=YLEN)
     if (xstart(2).eq.1) then
-        vx(:,0,:) = -vx(:,1,:)                  ! Dirchlet condition
-        vy(:,1,:) = 0.d0                        ! Dirchlet condition
-        vz(:,0,:) = -vz(:,1,:)                  ! Dirchlet condition
-        temp(:,0,:) = temp(:,1,:)               ! Adiabatic
-        co2(:,0,:) = co2(:,1,:)                 ! Zero flux
-        h2o(:,0,:) = h2o(:,1,:)                 ! Zero flux
+        vx(:,0,:)   = -vx(:,1,:)                    ! Dirchlet condition
+        vy(:,1,:)   = 0.d0                          ! Dirchlet condition
+        vz(:,0,:)   = -vz(:,1,:)                    ! Dirchlet condition
+        temp(:,0,:) = temp(:,1,:)                   ! Adiabatic
+        co2(:,0,:)  = co2(:,1,:)                    ! Zero flux
+        h2o(:,0,:)  = h2o(:,1,:)                    ! Zero flux
     end if
 
     if (xend(2).eq.nym) then
-        vx(:,ny,:) = -vx(:,nym,:)               ! Dirchlet condition
-        vy(:,ny,:) = 0.d0                       ! Dirchlet condition
-        vz(:,ny,:) = -vz(:,nym,:)               ! Dirchlet condition
-        temp(:,ny,:) = temp(:,nym,:)            ! Adiabatic
-        co2(:,ny,:) = co2(:,nym,:)              ! Zero flux
-        h2o(:,ny,:) = h2o(:,nym,:)              ! Zero flux
+        vx(:,ny,:)   = -vx(:,nym,:)                 ! Dirchlet condition
+        vy(:,ny,:)   = 0.d0                         ! Dirchlet condition
+        vz(:,ny,:)   = -vz(:,nym,:)                 ! Dirchlet condition
+        temp(:,ny,:) = temp(:,nym,:)                ! Adiabatic
+        co2(:,ny,:)  = co2(:,nym,:)                 ! Zero flux
+        h2o(:,ny,:)  = h2o(:,nym,:)                 ! Zero flux
+    end if
+
+    ! Front and back walls with vents (Z=0,Z=ZLEN)
+    if (xstart(3).eq.1) then
+        vx(:,:,0) = -vx(:,:,1)                      ! Dirchlet condition
+        vy(:,:,0) = -vy(:,:,1)                      ! Dirchlet condition
+        vz(:ixfst-1,:,1) = 0.0d0                    ! Dirchlet condition
+        vz(ixfen+1:,:,1) = 0.0d0                    ! Dirchlet condition
+        temp(:,:,0) = temp(:,:,1)                   ! Adiabatic
+        co2(:,:,0) = co2(:,:,1)                     ! Zero flux
+        h2o(:,:,0) = h2o(:,:,1)                     ! Zero flux
+    end if
+
+    if (xend(3).eq.nzm) then
+        vx(:oxcst-1,:,nz)   = -vx(:oxcst-1,:,nzm)   ! Dirchlet condition
+        vy(:oxfst-1,:,nz)   = -vy(:oxfst-1,:,nzm)   ! Dirchlet condition
+        vz(:oxfst-1,:,nz)   = 0.0d0                 ! Dirchlet condition
+        temp(:oxcst-1,:,nz) = temp(:oxcst-1,:,nzm)  ! Adiabatic
+        co2(:oxcst-1,:,nz)  = co2(:oxcst-1,:,nzm)   ! Zero flux
+        h2o(:oxcst-1,:,nz)  = h2o(:oxcst-1,:,nzm)   ! Zero flux
+
+        vx(oxcst+1:,:,nz)   = -vx(oxcst+1:,:,nzm)   ! Dirchlet condition
+        vy(oxfst+1:,:,nz)   = -vy(oxfst+1:,:,nzm)   ! Dirchlet condition
+        vz(oxfst+1:,:,nz)   = 0.0d0                 ! Dirchlet condition
+        temp(oxcst+1:,:,nz) = temp(oxcst+1:,:,nzm)  ! Adiabatic
+        co2(oxcst+1:,:,nz)  = co2(oxcst+1:,:,nzm)   ! Zero flux
+        h2o(oxcst+1:,:,nz)  = h2o(oxcst+1:,:,nzm)   ! Zero flux
     end if
 
     return
     
 end subroutine SetWallBCs
 
-subroutine SetInletBC
+subroutine CalcOutletBC
 
     use param
     use decomp_2d, only: xstart,xend
-    use local_arrays
+    use local_arrays, only: vx,vy,vz,temp,co2,h2o
     use vent_arrays
     use mpih
 
     implicit none
 
-    integer :: k,j
-    real    :: cvel
+    integer :: i,j,k
 
-    ! This ensures that the inlet velocity slowly increases from zero using a smooth third order spline.
-    if (time.lt.(tsvel+tvel)) then
-        cvel = isvel + ((ivel-isvel)*((3.0d0*(((time-tsvel)/tvel)**2)) - (2.0d0*(((time-tsvel)/tvel)**3))))
-    else 
-        cvel = ivel
-    end if
-
-    ! Wall with inlet vent
-    if (xstart(3).eq.1) then
-        vx(:,:,0) = -vx(:,:,1)          ! Dirchlet condition
-        vy(:,:,0) = -vy(:,:,1)          ! Dirchlet condition
-        vz(:,:,1) = 0.0d0               ! Dirchlet condition
-        temp(:,:,0) = temp(:,:,1)       ! Adiabatic
-        co2(:,:,0) = co2(:,:,1)         ! Zero flux
-        h2o(:,:,0) = h2o(:,:,1)         ! Zero flux
-    
-        do k=ixfst,ixfen
-            vz(k,:,1)  = cvel*icell(k)  ! Dirchlet condition
+    ! This is the first part of the upwind Crank Nicolson based update of outlet nodes
+    ! Here we store the derivative for the current timestep at the wall with outlet vent
+    if (xend(3).eq.nzm) then
+        do k=oxcst,oxcen
+            outvx(k,:) = (vx(k,:,nz) - vx(k,:,nzm))
+            outtemp(k,:) = (temp(k,:,nz) - temp(k,:,nzm))
+            outco2(k,:) = (co2(k,:,nz) - co2(k,:,nzm))
+            outh2o(k,:) = (h2o(k,:,nz) - h2o(k,:,nzm))
+        end do
+        do k=oxfst,oxfen
+            outvy(k,:) = (vy(k,:,nz) - vy(k,:,nzm))
+            outvz(k,:) = (vz(k,:,nz) - vz(k,:,nzm)) 
         end do
     end if
 
-end subroutine SetInletBC
+    return
+    
+end subroutine CalcOutletBC
 
 subroutine SetOutletBC
 
@@ -162,52 +186,149 @@ subroutine SetOutletBC
     implicit none
 
     integer :: i,j,k
+    real    :: wavefactor
+
+    ! This is the second part of the upwind Crank Nicolson based update of outlet nodes
     
-    ! In the slab code developed by ChongShen Ng, Steven Chong, Rui Yang and Naoki Hori, the outlet
-    ! boundary condition is an radiative/advective/non-reflecting boundary condition. The idea is to
-    ! have a speed that is somehow related to the Courant number and determines the speed of 
-    ! the Courant waves. Any disturbance at the outlet which travels in waves slower than this speed 
-    ! gets advected out. They solve d(q)/d(t) + C d(q)/d(z) = 0 at the outlet.
-    !
-    ! We tried this boundary condition and many more including imposing a fixed velocity
-    ! at the outlet. This always caused a numerical instability in the form waves entering the domain.
-    ! We found through trial and error that this is an instability related to the diffusive terms
-    ! since the diffusive terms in Z and Y direction are handled explicitly as compared to the slab code
-    ! where they are handled implicitly. Through trial and error, we found that imposing the double derivative
-    ! normal to the outflow as zero solves this issue (i.e. d^2(q)/dz^2 = 0). In a way, the solution at outflow 
-    ! is linearly interpolated from the interior. 
-    !
-    ! We still do not fully understand why it solves the issue though. However, the outflow is always going 
-    ! to be aphysical in nature and we do not care too much about the physical accuracy of the solution 
-    ! close to the outlet for the expected application of this code.
-    ! 
-    ! - Vanshu and Chris
+    ! Apparently this is somehow related to the Courant number and determines the speed of 
+    ! the Courant waves. Not sure why this is a fixed number instead of parameter*(delta_z/delta_t)
+    ! Any disturbance at the outlet which travels in waves slower than this speed gets advected out
+    ! Also called radiative/advective/non-reflecting boundary condition
+    wavefactor = 0.5*wavespeed*al*dt*dz
 
     ! Wall with outlet vent
     if (xend(3).eq.nzm) then
-        vx(:,:,nz) = -vx(:,:,nzm)               ! Dirchlet condition
-        vy(:,:,nz) = -vy(:,:,nzm)               ! Dirchlet condition
-        vz(:,:,nz) = 0.0d0                      ! Dirchlet condition
-        temp(:,:,nz) = temp(:,:,nzm)            ! Adiabatic 
-        co2(:,:,nz) = co2(:,:,nzm)              ! Zero flux 
-        h2o(:,:,nz) = h2o(:,:,nzm)              ! Zero flux 
-
         do k=oxcst,oxcen
-            vx(k,:,nz)   =  2.0d0*vx(k,:,nzm)   - vx(k,:,nzm-1)
-            temp(k,:,nz) =  2.0d0*temp(k,:,nzm) - temp(k,:,nzm-1)
-            co2(k,:,nz)  =  2.0d0*co2(k,:,nzm)  - co2(k,:,nzm-1)
-            h2o(k,:,nz)  =  2.0d0*h2o(k,:,nzm)  - h2o(k,:,nzm-1)
+            vx(k,:,nz) = (vx(k,:,nz) + (wavefactor*(vx(k,:,nzm) - outvx(k,:))))/(1.0d0 + wavefactor)
+            temp(k,:,nz) = (temp(k,:,nz) + (wavefactor*(temp(k,:,nzm) - outtemp(k,:))))/(1.0d0 + wavefactor)
+            co2(k,:,nz) = (co2(k,:,nz) + (wavefactor*(co2(k,:,nzm) - outco2(k,:))))/(1.0d0 + wavefactor)
+            h2o(k,:,nz) = (h2o(k,:,nz) + (wavefactor*(h2o(k,:,nzm) - outh2o(k,:))))/(1.0d0 + wavefactor)
         end do
-
         do k=oxfst,oxfen
-            vy(k,:,nz)   =  2.0d0*vy(k,:,nzm)   - vy(k,:,nzm-1)
-            vz(k,:,nz)   =  2.0d0*vz(k,:,nzm)   - vz(k,:,nzm-1)
-            ! vy(k,:,nz)   = (2.0d0*vy(k,:,nzm)   - vy(k,:,nzm-1))*ocell(k) + (-vy(k,:,nzm))*(1.0d0-ocell(k))
-            ! vz(k,:,nz)   = (2.0d0*vz(k,:,nzm)   - vz(k,:,nzm-1))*ocell(k)
+            vy(k,:,nz) = (vy(k,:,nz) + (wavefactor*(vy(k,:,nzm) - outvy(k,:))))/(1.0d0 + wavefactor)
+            vz(k,:,nz) = (vz(k,:,nz) + (wavefactor*(vz(k,:,nzm) - outvz(k,:))))/(1.0d0 + wavefactor)
         end do
-    end if
+    end if    
             
 end subroutine SetOutletBC
+
+subroutine AddBC_Vx
+
+    use param
+    use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,rhsx
+    use mpih
+
+    implicit none
+
+    integer :: k,j,i
+
+    do j=xstart(2),xend(2)
+        do i=xstart(3),xend(3)
+            rhsx(1,j,i)  = -vx(1,j,i)
+            rhsx(nx,j,i) = -vx(nx,j,i)
+        end do
+    end do
+
+    return
+
+end subroutine AddBC_Vx
+
+subroutine AddBC_Vy
+
+    use param
+    use decomp_2d, only: xstart,xend
+    use local_arrays, only: vy,rhsx
+    use mpih
+
+    implicit none
+
+    integer :: k,j,i
+
+    if (xstart(2).eq.1) then
+        do i=xstart(3),xend(3)
+            do k=1,nxm
+                rhsx(k,1,i) = -vy(k,1,i)
+            end do
+        end do
+    end if
+
+    return
+
+end subroutine AddBC_Vy
+
+subroutine AddBC_Vz
+
+    use param
+    use decomp_2d, only: xstart,xend
+    use local_arrays, only: vz,rhsx
+    use vent_arrays, only: isvel,tsvel,ixfst,ixfen
+    use mpih
+
+    implicit none
+
+    integer :: k,j,i
+    real    :: cvel,ctime
+
+    ! This ensures that the inlet velocity slowly increases from zero using a smooth third order spline.
+    ctime = time + al*dt
+    if (ctime.lt.(tsvel+tvel)) then
+        cvel = isvel + ((ivel-isvel)*((3.0d0*(((ctime-tsvel)/tvel)**2)) - (2.0d0*(((ctime-tsvel)/tvel)**3))))
+    else 
+        cvel = ivel
+    end if
+
+    if (xstart(3).eq.1) then
+        do j=xstart(2),xend(2)
+            do k=1,nxm
+                if ((k.ge.ixfst).and.(k.le.ixfen)) then
+                    rhsx(k,j,1) = cvel - vz(k,j,1)
+                else
+                    rhsx(k,j,1) = -vz(k,j,1)
+                end if
+            end do
+        end do
+    end if
+
+    return
+
+end subroutine AddBC_Vz
+
+subroutine AddOutletBC(qua,vsc,kst,ken)
+
+    use param
+    use decomp_2d, only: xstart,xend
+    use local_arrays, only: rhsx
+    use vent_arrays
+    use mpih
+
+    implicit none
+
+    real, intent(in), dimension(1:nx,xstart(2)-lvlhalo:xend(2)+lvlhalo,xstart(3)-lvlhalo:xend(3)+lvlhalo) :: qua
+    real, intent(in) :: vsc
+    integer, intent(in) :: kst,ken
+    real    :: betadx,wavefactor,numerator,denominator
+    integer :: k,j,i
+
+    ! FOR THE RADIATIVE B.C. AT THE OUTLET
+    betadx      = 0.5d0*al*dt/vsc
+    wavespeed   = 0.3
+    wavefactor  = wavespeed*al*dt*dz
+    numerator   = 0.5d0*wavefactor*ap1gi*betadx
+    denominator = ((1.0d0 - ac1gi*betadx)*(1.0d0 - wavefactor)) + (ap1gi*wavefactor*betadx)
+    am1oi       = (am1gi*betadx*(1-wavefactor))/denominator
+
+    if (xend(3).eq.nzm) then
+        do j=xstart(2),xend(2)
+            do k=kst,ken
+                rhsx(k,j,nzm) = (rhsx(k,j,nzm) + (numerator*(qua(k,j,nz)-qua(k,j,nzm))))/denominator
+            end do
+        end do
+    end if
+
+    return
+
+end subroutine AddOutletBC
 
 subroutine CorrectOutletFlux
 

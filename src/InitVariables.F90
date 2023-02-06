@@ -12,17 +12,18 @@ subroutine InitVariables
 
     use param
     use local_arrays
+    use ibm_arrays
     use stat_arrays
     use vent_arrays
     use decomp_2d
     use AuxiliaryRoutines
+    use implicit_decomp
 
     implicit none
       
     !-------------------------------------------------
     ! Arrays for grid making
     !-------------------------------------------------
-
     call AllocateReal1DArray(zc,1,nz)
     call AllocateReal1DArray(zm,1,nz)
     call AllocateReal1DArray(ak1,1,nz)
@@ -75,14 +76,19 @@ subroutine InitVariables
     !-------------------------------------------------
     ! Arrays for vents  
     !-------------------------------------------------
-
     call AllocateReal1dArray(icell,1,nxm)
     call AllocateReal1dArray(ocell,1,nxm)
+
+    call AllocateReal2DArray(outvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2DArray(outvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2DArray(outvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2DArray(outtemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2DArray(outco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2DArray(outh2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
 
     !-------------------------------------------------
     ! Arrays for statistics    
     !-------------------------------------------------
-
     if (statcalc) then
         ! X-CUT
         call AllocateReal2DArray(vx_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
@@ -184,12 +190,10 @@ subroutine InitVariables
     call AllocateReal3DArray(co2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     call AllocateReal3DArray(h2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
     call AllocateReal3DArray(dphhalo,1,nxm,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
-    call AllocateReal3DArray(ibm_body,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo,xstart(3)-lvlhalo,xend(3)+lvlhalo)
 
     !-----------------------------------------------
     ! Arrays without ghost cells
     !-----------------------------------------------
-    call AllocateReal3DArray(rhs,1,nx,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal3DArray(dph,1,nxm,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal3DArray(dq,1,nx,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal3DArray(qcap,1,nx,xstart(2),xend(2),xstart(3),xend(3))
@@ -202,6 +206,30 @@ subroutine InitVariables
     call AllocateReal3DArray(rutemp,1,nx,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal3DArray(ruco2,1,nx,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal3DArray(ruh2o,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+
+    !-----------------------------------------------
+    ! RHS arrays without ghost cells for transforms
+    !-----------------------------------------------
+    call AllocateReal3DArray(rhsx,dxst(1),dxen(1),dxst(2),dxen(2),dxst(3),dxen(3))
+    call AllocateReal3DArray(rhsy,dyst(1),dyen(1),dyst(2),dyen(2),dyst(3),dyen(3))
+    call AllocateReal3DArray(rhsz,dzst(1),dzen(1),dzst(2),dzen(2),dzst(3),dzen(3))
+
+    !-----------------------------------------------
+    ! IBM logical arrays without ghost cells
+    !-----------------------------------------------
+    call AllocateLogical3DArray(ibm_gc_px,dxst(1),dxen(1),dxst(2),dxen(2),dxst(3),dxen(3))
+
+    call AllocateLogical3DArray(ibm_gx_px,dxst(1),dxen(1),dxst(2),dxen(2),dxst(3),dxen(3))
+    call AllocateLogical3DArray(ibm_gy_px,dxst(1),dxen(1),dxst(2),dxen(2),dxst(3),dxen(3))
+    call AllocateLogical3DArray(ibm_gz_px,dxst(1),dxen(1),dxst(2),dxen(2),dxst(3),dxen(3))
+
+    call AllocateLogical3DArray(ibm_gx_py,dyst(1),dyen(1),dyst(2),dyen(2),dyst(3),dyen(3))
+    call AllocateLogical3DArray(ibm_gy_py,dyst(1),dyen(1),dyst(2),dyen(2),dyst(3),dyen(3))
+    call AllocateLogical3DArray(ibm_gz_py,dyst(1),dyen(1),dyst(2),dyen(2),dyst(3),dyen(3))
+
+    call AllocateLogical3DArray(ibm_gx_pz,dzst(1),dzen(1),dzst(2),dzen(2),dzst(3),dzen(3))
+    call AllocateLogical3DArray(ibm_gy_pz,dzst(1),dzen(1),dzst(2),dzen(2),dzst(3),dzen(3))
+    call AllocateLogical3DArray(ibm_gz_pz,dzst(1),dzen(1),dzst(2),dzen(2),dzst(3),dzen(3))
 
     return 
 

@@ -34,6 +34,7 @@ subroutine CreateResultDirectories
 ! ==============================================================================
 !  End of ModR04 & ModR05
 ! ==============================================================================
+    call system('mkdir -p Debug')
 
 end subroutine CreateResultDirectories
 

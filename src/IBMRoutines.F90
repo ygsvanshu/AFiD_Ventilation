@@ -10,17 +10,17 @@
 
 subroutine CreateBodyIBM
 
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: ibm_body
     use mpih
+    use param
+    use decomp_2d, only: xstart,xend,ystart,yend,zstart,zend,transpose_x_to_y,transpose_y_to_z
+    use local_arrays, only: rhsx,rhsy,rhsz
+    use ibm_arrays
 
     implicit none
 
-    integer         :: kc,jc,ic
+    integer         :: kc,kp,jc,jp,ic,ip
     character*50    :: filnam
-    logical         :: inside
-    real            :: p(3),chksum,res_dummy,val_max,val_min,val_max_all,val_min_all
+    real            :: chksum,res_dummy,val_max,val_min,val_max_all,val_min_all
     real            :: xmax,ymax,zmax, xmin,ymin,zmin, xdiff,ydiff,zdiff, alldiff
 
     integer ( kind = 4 ), allocatable, dimension(:,:) :: face_node
@@ -93,17 +93,33 @@ subroutine CreateBodyIBM
     ! call obj_normal_vector_print ( normal_num, normal_vector )
     ! call obj_node_xyz_print ( node_num, node_xyz )
 
-    ! Initialize the ibm_body 
-    ibm_body(:,:,:) = 0.d0
+    ! Initialize the ibm body 
+    rhsx(:,:,:) = 0.0d0
+    rhsy(:,:,:) = 0.0d0
+    rhsz(:,:,:) = 0.0d0
     chksum = 0
-    ! Check for points inside the geometry and set the ibm_body to 1.0
-    do kc = 1,nxm
+    ! Check for points inside the geometry and set the ibm body to 1.0
+    do ic = xstart(3),xend(3)
         do jc = xstart(2),xend(2)
-            do ic = xstart(3),xend(3)
-                p = (/ym(jc),zm(ic),xm(kc)/)    ! This is such that the person faces the -z direction i.e. the inlet vent
-                call polyhedron_contains_point_3d ( node_num, face_num, order_max, node_xyz, face_order, face_node, p, inside )
-                if(inside) then
-                    ibm_body(kc,jc,ic) = 1.d0
+            do kc = 1,nxm
+                ! This is such that the person faces the -z direction i.e. the inlet vent
+                call polyhedron_contains_point_3d ( node_num, face_num, order_max, node_xyz, face_order, face_node, (/ym(jc),zm(ic),xc(kc)/), ibm_gx_px(kc,jc,ic))
+                call polyhedron_contains_point_3d ( node_num, face_num, order_max, node_xyz, face_order, face_node, (/yc(jc),zm(ic),xm(kc)/), ibm_gy_px(kc,jc,ic))
+                call polyhedron_contains_point_3d ( node_num, face_num, order_max, node_xyz, face_order, face_node, (/ym(jc),zc(ic),xm(kc)/), ibm_gz_px(kc,jc,ic))
+            enddo
+        enddo
+    enddo
+
+    do ic = xstart(3),xend(3)
+        ip = min(ic+1,xend(3))
+        do jc = xstart(2),xend(2)
+            jp = min(jc+1,xend(2))
+            do kc = 1,nxm
+                kp = kc+1
+                ! Check if all face velocity components are non inside the IBM body
+                if(ibm_gx_px(kc,jc,ic).or.ibm_gy_px(kc,jc,ic).or.ibm_gz_px(kc,jc,ic).or.ibm_gx_px(kp,jc,ic).or.ibm_gy_px(kc,jp,ic).or.ibm_gz_px(kc,jc,ip)) then
+                    ibm_gc_px(kc,jc,ic) = .true.
+                    rhsx(kc,jc,ic) = 1.0d0
                     chksum = chksum + 1.0d0
                 endif
             enddo
@@ -112,7 +128,86 @@ subroutine CreateBodyIBM
 
     call MpiSumRealScalar(chksum,res_dummy)
     chksum = res_dummy
-    if(ismaster) write(6,*) 'Number of grid points in IBM person geometry = ',int(chksum)
+    if(ismaster) write(6,*) 'Number of cells intersecting IBM person geometry = ',int(chksum)
+
+    filnam = trim('ibm_body.h5')
+    call HdfWriteRealHalo3D(filnam,rhsx)
+
+    ! Transforms for the x-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
+                if (ibm_gx_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,nym
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gx_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nzm
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gx_pz = .true.
+            enddo
+        enddo
+    enddo
+    rhsx(nx,:,:) = 0.0d0
+
+    ! Transforms for the y-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
+                if (ibm_gy_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,nym
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gy_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nzm
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gy_pz = .true.
+            enddo
+        enddo
+    enddo
+
+    ! Transforms for the z-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
+                if (ibm_gz_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,nym
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gz_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nzm
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gz_pz = .true.
+            enddo
+        enddo
+    enddo
 
     deallocate ( face_node )
     deallocate ( face_order )
@@ -120,12 +215,33 @@ subroutine CreateBodyIBM
     deallocate ( normal_vector )
     deallocate ( vertex_normal )
     
-    filnam = trim('ibm_body.h5')
-    call HdfWriteRealHalo3D(filnam,ibm_body)
-
     return
 
 end subroutine CreateBodyIBM
+
+subroutine AddBodyIBM(qua,ibm,val)
+
+    use mpih
+    use param
+    use decomp_2d, only: xstart,xend
+    use local_arrays, only: rhsx
+    
+    implicit none
+
+    real,    intent(in), dimension(1:nx,xstart(2)-lvlhalo:xend(2)+lvlhalo,xstart(3)-lvlhalo:xend(3)+lvlhalo) :: qua
+    logical, intent(in), dimension(1:nx,xstart(2):xend(2),xstart(3):xend(3)) :: ibm
+    real,    intent(in) :: val
+    integer :: kc,jc,ic
+
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nx
+                if (ibm(kc,jc,ic)) rhsx(kc,jc,ic) = val - qua(kc,jc,ic)
+            end do
+        end do
+    end do
+
+end subroutine AddBodyIBM
 
 subroutine AddBreathIBM
 
@@ -173,10 +289,6 @@ subroutine AddBreathIBM
             do kc=1,nx     
                 space_signal    = exp(-0.5*((2.0*(xc(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2 + (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
                 qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
-                ! vx(kc,jc,ic)    = vx(kc,jc,ic)   + injectmeanvx*qprefactor
-                ! temp(kc,jc,ic)  = temp(kc,jc,ic) + injectmeantemp*qprefactor
-                ! co2(kc,jc,ic)   = co2(kc,jc,ic)  + injectmeanco2*qprefactor
-                ! h2o(kc,jc,ic)   = h2o(kc,jc,ic)  + injectmeanh2o*qprefactor
                 qcap(kc,jc,ic)  = qcap(kc,jc,ic) + (injectmeanvx*qprefactor)
                 hro(kc,jc,ic)   = hro(kc,jc,ic)  + (injectmeantemp*qprefactor)
                 qco2(kc,jc,ic)  = qco2(kc,jc,ic) + (injectmeanco2*qprefactor)
@@ -186,11 +298,9 @@ subroutine AddBreathIBM
             do kc=1,nxm
                 space_signal    = exp(-0.5*((2.0*(xm(kc)-breathx)/kernel_width_space)**2  + (2.0*(yc(jc)-breathy)/kernel_width_space)**2 + (2.0*(zm(ic)-breathz)/kernel_width_space)**2))
                 qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
-                ! vy(kc,jc,ic)    = vy(kc,jc,ic)   + injectmeanvy*qprefactor
                 dph(kc,jc,ic)   = dph(kc,jc,ic)  + (injectmeanvy*qprefactor)
                 space_signal    = exp(-0.5*((2.0*(xm(kc)-breathx)/kernel_width_space)**2  + (2.0*(ym(jc)-breathy)/kernel_width_space)**2 + (2.0*(zc(ic)-breathz)/kernel_width_space)**2))
                 qprefactor      = (sprefactor*space_signal*time_signal*injectedvol)!*ga*dt)
-                ! vz(kc,jc,ic)    = vz(kc,jc,ic)   + injectmeanvz*qprefactor
                 dq(kc,jc,ic)    = dq(kc,jc,ic)   + (injectmeanvz*qprefactor)
             enddo
         enddo
@@ -204,34 +314,139 @@ end subroutine AddBreathIBM
 ! Use a sphere as a test IBM body
 subroutine CreateDebugBodyIBM
 
-    use param
-    use decomp_2d, only: xstart,xend
-    use local_arrays, only: ibm_body
     use mpih
+    use param
+    use decomp_2d, only: xstart,xend,ystart,yend,zstart,zend,transpose_x_to_y,transpose_y_to_z
+    use local_arrays, only: rhsx,rhsy,rhsz
+    use ibm_arrays
 
     implicit none
 
-    integer         :: kc,jc,ic
+    integer         :: kc,kp,jc,jp,ic,ip
     character*50    :: filnam
+    logical         :: inside_xc,inside_xp,inside_yc,inside_yp,inside_zc,inside_zp
+    real            :: sqradius,sqdistance,chksum,res_dummy
 
-    real    :: radius, distance
-    radius = 0.1d0
-    do kc=1,nxm
+    rhsx(:,:,:) = 0.0d0
+    rhsy(:,:,:) = 0.0d0
+    rhsz(:,:,:) = 0.0d0
+
+    sqradius = 0.1d0**2.0d0
+
+    do ic=xstart(3),xend(3)
+        ip = ic + 1
         do jc=xstart(2),xend(2)
-            do ic=xstart(3),xend(3)
-                distance = 0.0d0
-                distance = distance + ((xm(kc)-personx)**2)
-                distance = distance + ((ym(jc)-persony)**2)
-                distance = distance + ((zm(ic)-personz)**2)
-                distance = distance**0.5
-                if (distance.le.radius) ibm_body(kc,jc,ic) = 1.0d0
-            end do
-        end do
-    end do
-    
+            jp = jc + 1
+            do kc=1,nxm
+                kp = kc + 1
+
+                sqdistance = ((xc(kc)-personx)**2) + ((ym(jc)-persony)**2) + ((zm(ic)-personz)**2)
+                if (sqdistance.le.sqradius) inside_xc = .true.
+                sqdistance = ((xc(kp)-personx)**2) + ((ym(jc)-persony)**2) + ((zm(ic)-personz)**2)
+                if (sqdistance.le.sqradius) inside_xp = .true.
+                sqdistance = ((xm(kc)-personx)**2) + ((yc(jc)-persony)**2) + ((zm(ic)-personz)**2)
+                if (sqdistance.le.sqradius) inside_yc = .true.
+                sqdistance = ((xm(kc)-personx)**2) + ((yc(jp)-persony)**2) + ((zm(ic)-personz)**2)
+                if (sqdistance.le.sqradius) inside_yp = .true.
+                sqdistance = ((xm(kc)-personx)**2) + ((ym(jc)-persony)**2) + ((zc(ic)-personz)**2)
+                if (sqdistance.le.sqradius) inside_zc = .true.
+                sqdistance = ((xm(kc)-personx)**2) + ((ym(jc)-persony)**2) + ((zc(ip)-personz)**2)
+                if (sqdistance.le.sqradius) inside_zp = .true.
+                ! Check if all face velocity components are non inside the IBM body
+                if(inside_xc.and.inside_xp.and.inside_yc.and.inside_yp.and.inside_zc.and.inside_zp) then
+                    ibm_gc_px(kc,jc,ic) = .true.
+                    rhsx(kc,jc,ic) = 1.0d0
+                    chksum = chksum + 1.0d0
+                endif
+                ibm_gx_px(kc,jc,ic) = inside_xc
+                ibm_gy_px(kc,jc,ic) = inside_yc
+                ibm_gz_px(kc,jc,ic) = inside_zc
+            enddo
+        enddo
+    enddo
+
+    call MpiSumRealScalar(chksum,res_dummy)
+    chksum = res_dummy
+    if(ismaster) write(6,*) 'Number of cells intersecting IBM person geometry = ',int(chksum)
 
     filnam = trim('ibm_body.h5')
-    call HdfWriteRealHalo3D(filnam,ibm_body)
+    call HdfWriteRealHalo3D(filnam,rhsx)
+
+    ! Transforms for the x-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nx
+                if (ibm_gx_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,nym
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gx_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nzm
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gx_pz = .true.
+            enddo
+        enddo
+    enddo
+    rhsx(nx,:,:) = 0.0d0
+
+    ! Transforms for the y-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
+                if (ibm_gy_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,ny
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gy_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nzm
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gy_pz = .true.
+            enddo
+        enddo
+    enddo
+
+    ! Transforms for the z-grid
+    do ic=xstart(3),xend(3)
+        do jc=xstart(2),xend(2)
+            do kc=1,nxm
+                if (ibm_gz_px(kc,jc,ic)) rhsx = 1.0d0
+            enddo
+        enddo
+    enddo
+    call transpose_x_to_y(rhsx,rhsy)
+    do ic=ystart(3),yend(3)
+        do kc=ystart(1),yend(1)
+            do jc=1,nym
+                if (rhsy(kc,jc,ic).gt.0.5d0) ibm_gz_py = .true.
+            enddo
+        enddo
+    enddo
+    call transpose_y_to_z(rhsy,rhsz)
+    do jc=zstart(2),zend(2)
+        do kc=zstart(1),zend(1)
+            do ic=1,nz
+                if (rhsz(kc,jc,ic).gt.0.5d0) ibm_gz_pz = .true.
+            enddo
+        enddo
+    enddo
 
     return
 

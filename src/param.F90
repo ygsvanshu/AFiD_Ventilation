@@ -72,7 +72,10 @@ module param
     !******* Metric coefficients *******************************
     real, allocatable, dimension(:) :: ap3ck,ac3ck,am3ck
     real, allocatable, dimension(:) :: ap3sk,ac3sk,am3sk
-    real, allocatable, dimension(:) :: ap3ssk,ac3ssk,am3ssk   
+    real, allocatable, dimension(:) :: ap3ssk,ac3ssk,am3ssk  
+    real                            :: ap2gj,ac2gj,am2gj
+    real                            :: ap1gi,ac1gi,am1gi
+    real                            :: am1oi 
     ! =ModV13=Vanshu=2020-11-12=====================================================
     real :: dccb1,dccb2,dccb3,dcct1,dcct2,dcct3
     real :: dcmb1,dcmb2,dcmb3,dcmt1,dcmt2,dcmt3
@@ -89,7 +92,6 @@ module param
     real                    :: ren, pec
     real                    :: pi
     real                    :: al,ga,ro
-    real                    :: beta
     real                    :: qqmax,qqtot
     real                    :: re
     real                    :: tempmax,tempmin,tempm
@@ -102,7 +104,8 @@ module param
     logical                 :: ismaster=.false.
     integer                 :: lvlhalo=1
     integer                 :: tsteps
-    integer                 :: comm_xcut,comm_ycut,comm_zcut
+    integer                 :: comm_xcut,comm_ycut,comm_zcut 
+    real                    :: wavespeed   
         
 end module param
       
@@ -115,10 +118,21 @@ module local_arrays
     implicit none
     real,allocatable,dimension(:,:,:)   :: vx,vy,vz
     real,allocatable,dimension(:,:,:)   :: pr,temp,co2,h2o,rhs
+    real,allocatable,dimension(:,:,:)   :: rhsx,rhsy,rhsz
     real,allocatable,dimension(:,:,:)   :: rux,ruy,ruz,rutemp,ruco2,ruh2o
     real,allocatable,dimension(:,:,:)   :: dph,qcap,dq,hro,dphhalo,qco2,qh2o
-    real,allocatable,dimension(:,:,:)   :: ibm_body
 end module local_arrays
+
+module ibm_arrays
+    implicit none
+    ! ibm_g*_p* indicates the logical array with points internal to IBM body being true
+    ! g* indicates the grid (x-face, y-face, z-face)
+    ! p* indicates the pencil orientation (x-pencil, y-pencil, z-pencil)
+    logical,allocatable,dimension(:,:,:)    :: ibm_gc_px
+    logical,allocatable,dimension(:,:,:)    :: ibm_gx_px,ibm_gy_px,ibm_gz_px
+    logical,allocatable,dimension(:,:,:)    :: ibm_gx_py,ibm_gy_py,ibm_gz_py
+    logical,allocatable,dimension(:,:,:)    :: ibm_gx_pz,ibm_gy_pz,ibm_gz_pz
+end module ibm_arrays
 
 module stat_arrays
 
@@ -169,6 +183,7 @@ module vent_arrays
     real                                :: iflux,oflux
     real                                :: iarea,oarea
     real,allocatable,dimension(:)       :: icell,ocell
+    real,allocatable,dimension(:,:)     :: outvx,outvy,outvz,outtemp,outco2,outh2o
 end module vent_arrays
 
 !=====================================================    

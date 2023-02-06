@@ -11,7 +11,8 @@
 subroutine GlobalQuantities
 
     use param
-    use local_arrays,only: vy,vx,vz,temp,co2,h2o,ibm_body
+    use local_arrays,only: vy,vx,vz,temp,co2,h2o
+    use ibm_arrays, only: ibm_gc_px
     use decomp_2d,only: xstart,xend
     use mpih
 
@@ -68,8 +69,8 @@ subroutine GlobalQuantities
             do ic=xstart(3),xend(3)
                 ip=ic+1
 
-                ! Check for not ibm_body
-                if (ibm_body(kc,jc,ic).lt.1.0d-8) then
+                ! Check for not ibm body
+                if (.not.ibm_gc_px(kc,jc,ic)) then
 
                     ! Compute the cell volume
                     volc = dx3c(kc)/(dx*dy*dz)

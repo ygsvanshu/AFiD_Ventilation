@@ -2,11 +2,12 @@ program AFiD
 
 	use mpih
 	use param
-	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr,ibm_body
+	use local_arrays, only: vx,vy,vz,temp,co2,h2o,pr
 	use vent_arrays
 	use decomp_2d
 	use decomp_2d_fft
 	use stat_arrays, only: nstatsamples,tstat,tinterval
+	use implicit_decomp
       
 	implicit none
       
@@ -44,6 +45,7 @@ program AFiD
 	endif
 
 	call decomp_2d_init(nxm,nym,nzm,prow,pcol,(/ .false.,.false.,.false. /))
+	call InitImplicitDecomp
 
 	ts=MPI_WTIME()
 	tin(1) = MPI_WTIME()
@@ -140,13 +142,12 @@ program AFiD
 
 	time=0.d0
 
+	call TestRoutine
+
 	call InitPressureSolver
 	call InitVents	! Initialize vent indices and cell areas
 
-	if (person_on) then
-		call CreateBodyIBM
-		call update_halo(ibm_body,lvlhalo)
-	end if
+	if (person_on) call CreateBodyIBM
 
 	if(readflow) then
 		if(ismaster) write(6,*) 'Reading initial condition from file'
@@ -158,7 +159,7 @@ program AFiD
         time=0.d0
         instCFL=0.d0
         call CreateInitialConditions
-		call SetOutletBC
+		! call SetOutletBC
 	endif
 
 	call CorrectOutletFlux
@@ -166,7 +167,6 @@ program AFiD
 	! the inlet velocity. This is taken care in SetInletBC
 	isvel = iflux/iarea
 	tsvel = time
-	call SetInletBC
 	call SetWallBCs
 
 	! Init tstat
@@ -255,7 +255,6 @@ program AFiD
         endif
 
         call TimeMarcher
-        time=time+dt
 
         if((ntime.eq.1).or.(mod(ntime,nout).eq.0)) then ! TOUT -> NOUT
 

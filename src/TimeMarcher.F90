@@ -22,8 +22,6 @@ subroutine TimeMarcher
     integer :: ns
     integer :: j,k,i
 
-    beta=dt/ren*0.5d0
-
     do ns=1,nsst
 
         !RO! Coefficients for time marching integration (alpha, gamma, rho)
@@ -31,6 +29,8 @@ subroutine TimeMarcher
         al=alm(ns)
         ga=gam(ns)
         ro=rom(ns)
+
+        call CalcOutletBC
 
         call ExplicitTermsVX
         call ExplicitTermsVY
@@ -55,11 +55,10 @@ subroutine TimeMarcher
         call update_halo(co2,lvlhalo)
         call update_halo(h2o,lvlhalo)
 
-        call SetInletBC
+        call SetWallBCs
         call SetOutletBC
         call CorrectOutletFlux
-        call SetWallBCs
-
+        
         call CalcLocalDivergence
         call SolvePressureCorrection
 
@@ -88,6 +87,8 @@ subroutine TimeMarcher
         call update_halo(vy,lvlhalo)
         call update_halo(vz,lvlhalo)
         call update_halo(pr,lvlhalo)
+
+        time = time + al*dt
 
     enddo
 

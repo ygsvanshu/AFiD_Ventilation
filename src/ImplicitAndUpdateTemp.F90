@@ -12,71 +12,69 @@
 
 subroutine ImplicitAndUpdateTemp
 
-      use param
-      use local_arrays, only: temp,hro,rutemp,rhs
-      use decomp_2d, only: xstart,xend
+    use param
+    use local_arrays, only: temp,hro,rutemp,rhsx
+    use ibm_arrays, only: ibm_gx_px
+    use vent_arrays, only: oxcst,oxcen
+    use decomp_2d, only: xstart,xend
 
-      implicit none
+    implicit none
 
-      integer :: jc,kc,ic
-      integer :: km,kp
-      real    :: alpec,dxxt
-      real    :: app,acc,amm
+    integer :: im,ic,ip
+    integer :: jm,jc,jp
+    integer :: km,kc,kp
+    real    :: alpec
+    real    :: dxxt,dyyt,dzzt
+    real    :: app,acc,amm
 
-      alpec=al/pec
+    alpec=al/pec
 
-!$OMP   PARALLEL DO &
-!$OMP   DEFAULT(none) &
-!$OMP   SHARED(xstart,xend,nxm,temp) &
-!$OMP   SHARED(kmv,kpv,am3ck,ac3ck,ap3ck) &
-!$OMP   SHARED(ga,ro,alpec,dt) &
-!$OMP   SHARED(rhs,rutemp,hro) &
-!$OMP   PRIVATE(ic,jc,kc,km,kp) &
-!$OMP   PRIVATE(amm,acc,app) &
-!$OMP   PRIVATE(dxxt)
+    !$OMP   PARALLEL DO &
+    !$OMP   DEFAULT(none) &
+    !$OMP   SHARED(xstart,xend,nxm,temp) &
+    !$OMP   SHARED(dyq,dzq,am3ck,ac3ck,ap3ck) &
+    !$OMP   SHARED(ga,ro,alpec,dt) &
+    !$OMP   SHARED(rhs,rutemp,hro) &
+    !$OMP   PRIVATE(ic,jc,kc,im,jm,km,ip,jp,kp) &
+    !$OMP   PRIVATE(amm,acc,app) &
+    !$OMP   PRIVATE(dxxt,dyyt,dzzt)
 
-      do ic=xstart(3),xend(3)
-            do jc=xstart(2),xend(2)
-                  do kc=1,nx
+    do ic=xstart(3),xend(3)
+        im=ic-1
+        ip=ic+1
+        do jc=xstart(2),xend(2)
+            jm=jc-1
+            jp=jc+1
+            do kc=2,nxm
+                km=kc-1
+                kp=kc+1
 
-                        km = kc - 1
-                        kp = kc + 1
+                if (kc.eq.1)  km=kc+1
+                if (kc.eq.nx) kp=kc-1
 
-                        if (kc.eq.1)  km = kc + 1
-                        if (kc.eq.nx) kp = kc - 1
+                ! Second derivative in x-direction of temp
+                dxxt = temp(kp,jc,ic)*ap3ssk(kc) + temp(kc,jc,ic)*ac3ssk(kc) + temp(km,jc,ic)*am3ssk(kc)
+                ! Second derivative in y-direction of temp
+                dzzt = (temp(kc,jc,ip) -2.0*temp(kc,jc,ic) + temp(kc,jc,im))*dzq
+                ! Second derivative in z-direction of temp
+                dyyt = (temp(kc,jp,ic) -2.0*temp(kc,jc,ic) + temp(kc,jm,ic))*dyq
 
-!   Calculate second derivative of temperature in the x-direction.
-!   This is the only term calculated implicitly for temperature.
+                !    Calculate right hand side of Eq. 5 (VO96)
+                rhsx(kc,jc,ic) = (ga*hro(kc,jc,ic) + ro*rutemp(kc,jc,ic) + alpec*(dxxt+dyyt+dzzt))*dt
 
-                        dxxt = temp(kp,jc,ic)*ap3ck(kc) + temp(kc,jc,ic)*ac3ck(kc) + temp(km,jc,ic)*am3ck(kc)
+                !    Store the non-linear terms for the calculation of the next timestep
+                rutemp(kc,jc,ic) = hro(kc,jc,ic)
 
-!    Calculate right hand side of Eq. 5 (VO96)
-
-                        rhs(kc,jc,ic) = (ga*hro(kc,jc,ic) + ro*rutemp(kc,jc,ic) + alpec*dxxt)*dt
-
-!    Store the non-linear terms for the calculation of 
-!    the next timestep
-
-                        rutemp(kc,jc,ic) = hro(kc,jc,ic)
-
-                  enddo
             enddo
-      enddo
-!$OMP END PARALLEL DO
+        enddo
+    enddo
 
-      ! rhs(1,:,:)=0.0d0
-      ! rhs(nx,:,:)=0.0d0
+    !$OMP END PARALLEL DO
 
-!  Solve equation and update temperature
+    call AddBodyIBM(temp,ibm_gx_px,1.0d0)
+    call AddOutletBC(temp,pec,oxcst,oxcen)
+    call SolveImpEqnUpdate_Temp
 
-      call SolveImpEqnUpdate_Temp
+    return
 
-!  Set boundary conditions on the temperature field at top
-!  and bottom plates. This seems necessary.
-
-      ! temp(1,xstart(2):xend(2),xstart(3):xend(3)) = tempbp(xstart(2):xend(2),xstart(3):xend(3))
-      ! temp(nx,xstart(2):xend(2),xstart(3):xend(3)) = temptp(xstart(2):xend(2),xstart(3):xend(3))
-
-      return
-
-      end
+    end

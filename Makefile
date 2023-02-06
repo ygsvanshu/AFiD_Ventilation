@@ -5,8 +5,8 @@
 # Basic Fortran compiler arguments 
 #--------------------------------------------------------------
 FC = h5pfc -fpp
-FC += -r8 -Ofast
-# FC += -r8 -O0 -g -traceback -check bounds
+# FC += -r8 -Ofast
+FC += -r8 -O0 -g -traceback -check bounds
 
 #--------------------------------------------------------------
 # Advanced Fortran compiler options 
@@ -77,14 +77,14 @@ FFILES +=   CalcMaxCFL.F90 CalcLocalDivergence.F90\
             ReadFlowField.F90 ReadInputFile.F90 ReadOutlet.F90 SetWallBCs.F90\
             SolveImpEqnUpdate_CO2.F90 SolveImpEqnUpdate_H2O.F90 SolveImpEqnUpdate_Temp.F90\
             SolveImpEqnUpdate_X.F90 SolveImpEqnUpdate_Y.F90 SolveImpEqnUpdate_Z.F90\
-            SolvePressureCorrection.F90 StatRoutines.F90 TimeMarcher.F90\
+            SolvePressureCorrection.F90 StatRoutines.F90 TimeMarcher.F90 TestRoutine.F90\
             WriteFlowField.F90 WriteFlowFieldSnapshot.F90 WriteGridInfo.F90 WriteOutlet.F90\
             factorize.F90 main.F90
 
 #-------------------------------------------------------------------------------
 # Files that create modules:
 #-------------------------------------------------------------------------------
-MFILES = param.F90 decomp_2d.F90 AuxiliaryRoutines.F90 decomp_2d_fft.F90 
+MFILES = param.F90 decomp_2d.F90 AuxiliaryRoutines.F90 ImplicitDecomp.F90 decomp_2d_fft.F90 
 
 # Object and module directory:
 SRCDIR=src
@@ -114,6 +114,8 @@ $(OBJDIR)/AuxiliaryRoutines.o: $(SRCDIR)/AuxiliaryRoutines.F90
 $(OBJDIR)/decomp_2d.o: $(SRCDIR)/decomp_2d.F90
 	$(FC) -c -o $@ $< $(LDFLAGS)
 $(OBJDIR)/decomp_2d_fft.o: $(SRCDIR)/decomp_2d_fft.F90
+	$(FC) -c -o $@ $< $(LDFLAGS) 
+$(OBJDIR)/ImplicitDecomp.o: $(SRCDIR)/ImplicitDecomp.F90
 	$(FC) -c -o $@ $< $(LDFLAGS) 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.F90 $(MOBJS)

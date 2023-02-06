@@ -13,14 +13,18 @@
 subroutine ImplicitAndUpdateCO2
 
     use param
-    use local_arrays, only: co2,qco2,ruco2,rhs
+    use local_arrays, only: co2,qco2,ruco2,rhsx
+    use ibm_arrays, only: ibm_gx_px
+    use vent_arrays, only: oxcst,oxcen
     use decomp_2d, only: xstart,xend
 
     implicit none
 
-    integer :: jc,kc,ic
-    integer :: km,kp
-    real    :: alpec,dxxt
+    integer :: im,ic,ip
+    integer :: jm,jc,jp
+    integer :: km,kc,kp
+    real    :: alpec
+    real    :: dxxt,dyyt,dzzt
     real    :: app,acc,amm
 
     alpec=al/pec
@@ -28,35 +32,37 @@ subroutine ImplicitAndUpdateCO2
     !$OMP   PARALLEL DO &
     !$OMP   DEFAULT(none) &
     !$OMP   SHARED(xstart,xend,nxm,co2) &
-    !$OMP   SHARED(kmv,kpv,am3ck,ac3ck,ap3ck) &
+    !$OMP   SHARED(dyq,dzq,am3ck,ac3ck,ap3ck) &
     !$OMP   SHARED(ga,ro,alpec,dt) &
     !$OMP   SHARED(rhs,ruco2,qco2) &
-    !$OMP   PRIVATE(ic,jc,kc,km,kp) &
+    !$OMP   PRIVATE(ic,jc,kc,im,jm,km,ip,jp,kp) &
     !$OMP   PRIVATE(amm,acc,app) &
-    !$OMP   PRIVATE(dxxt)
+    !$OMP   PRIVATE(dxxt,dyyt,dzzt)
 
     do ic=xstart(3),xend(3)
+        im=ic-1
+        ip=ic+1
         do jc=xstart(2),xend(2)
-            do kc=1,nx
+            jm=jc-1
+            jp=jc+1
+            do kc=2,nxm
+                km=kc-1
+                kp=kc+1
 
-                km = kc - 1
-                kp = kc + 1
+                if (kc.eq.1)  km=kc+1
+                if (kc.eq.nx) kp=kc-1
 
-                if (kc.eq.1)  km = kc + 1
-                if (kc.eq.nx) kp = kc - 1
+                ! Second derivative in x-direction of co2
+                dxxt = co2(kp,jc,ic)*ap3ssk(kc) + co2(kc,jc,ic)*ac3ssk(kc) + co2(km,jc,ic)*am3ssk(kc)
+                ! Second derivative in y-direction of co2
+                dzzt = (co2(kc,jc,ip) -2.0*co2(kc,jc,ic) + co2(kc,jc,im))*dzq
+                ! Second derivative in z-direction of co2
+                dyyt = (co2(kc,jp,ic) -2.0*co2(kc,jc,ic) + co2(kc,jm,ic))*dyq
 
-                ! Calculate second derivative of co2erature in the x-direction.
-                ! This is the only term calculated implicitly for co2erature.
+                !    Calculate right hand side of Eq. 5 (VO96)
+                rhsx(kc,jc,ic) = (ga*qco2(kc,jc,ic) + ro*ruco2(kc,jc,ic) + alpec*(dxxt+dyyt+dzzt))*dt
 
-                dxxt = co2(kp,jc,ic)*ap3ck(kc) + co2(kc,jc,ic)*ac3ck(kc) + co2(km,jc,ic)*am3ck(kc)
-
-                ! Calculate right hand side of Eq. 5 (VO96)
-
-                rhs(kc,jc,ic) = (ga*qco2(kc,jc,ic) + ro*ruco2(kc,jc,ic) + alpec*dxxt)*dt
-
-                ! Store the non-linear terms for the calculation of 
-                ! the next timestep
-
+                !    Store the non-linear terms for the calculation of the next timestep
                 ruco2(kc,jc,ic) = qco2(kc,jc,ic)
 
             enddo
@@ -65,7 +71,8 @@ subroutine ImplicitAndUpdateCO2
 
     !$OMP END PARALLEL DO
 
-    !  Solve equation and update co2
+    call AddBodyIBM(co2,ibm_gx_px,0.0d0)
+    call AddOutletBC(co2,pec,oxcst,oxcen)
     call SolveImpEqnUpdate_CO2
 
     return
