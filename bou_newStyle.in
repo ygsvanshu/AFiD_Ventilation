@@ -56,7 +56,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 506 Outlet vent dimension and height         OLEN OHEIGHT       '0.1' '0.05'
 507 Ventilation airflow velocity             IVEL TVEL          '1.57e-2' '1'
 508 Person and breath enabled (y/n)          PERSON BREATH      'y' 'y'
-509 Person geometry OBJfile                  OBJFILE            'sittingwoman03.obj' 
+509 Person geometry OBJfile                  OBJFILE            'bodies/sittingwoman03.obj' 
 510 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
 511 Breath geometry location and scale       BX BY BZ           '0.312' '0.5d0' '0.472'
 512 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
