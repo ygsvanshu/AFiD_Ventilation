@@ -15,6 +15,7 @@ subroutine InitMovie
 
 	use param
 	use decomp_2d, only: xstart,xend
+    use local_arrays, only: ibm_body
 	use movie_indices
 	use mpih
 
@@ -68,30 +69,30 @@ subroutine InitMovie
 		if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_ci = i
 	end do
 
-    ! dsetname = trim("ibm_body")
+    dsetname = trim("ibm_body")
 
-    ! filename = trim('Results/movie_xcut.h5')
-    ! cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
-	! cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
-    ! call HdfWriteReal2D_X(dsetname,filename,(cmc*ibm_body(mov_ck,xstart(2):xend(2),xstart(3):xend(3)) + cpc*ibm_body(mov_ck+1,xstart(2):xend(2),xstart(3):xend(3))))
+    filename = trim('Results/movie_xcut.h5')
+    cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
+	cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
+    call HdfWriteReal2D_X(dsetname,filename,(cmc*ibm_body(mov_ck,xstart(2):xend(2),xstart(3):xend(3)) + cpc*ibm_body(mov_ck+1,xstart(2):xend(2),xstart(3):xend(3))))
 
-    ! if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
-    !     filename = trim('Results/movie_ycut.h5')
-    !     cpc = (movie2Dy     - ym(mov_cj))/(ym(mov_cj+1) - ym(mov_cj))
-    !     cmc = (ym(mov_cj+1) - movie2Dy)  /(ym(mov_cj+1) - ym(mov_cj))
-    !     call HdfWriteReal2D_Y(dsetname,filename,(cmc*ibm_body(1:nx,mov_cj,xstart(3):xend(3)) + cpc*ibm_body(1:nx,mov_cj+1,xstart(3):xend(3))))
-    ! end if
+    if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
+        filename = trim('Results/movie_ycut.h5')
+        cpc = (movie2Dy     - ym(mov_cj))/(ym(mov_cj+1) - ym(mov_cj))
+        cmc = (ym(mov_cj+1) - movie2Dy)  /(ym(mov_cj+1) - ym(mov_cj))
+        call HdfWriteReal2D_Y(dsetname,filename,(cmc*ibm_body(1:nx,mov_cj,xstart(3):xend(3)) + cpc*ibm_body(1:nx,mov_cj+1,xstart(3):xend(3))))
+    end if
 
-    ! if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
-    !     filename = trim('Results/movie_zcut.h5')
-    !     cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
-    !     cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
-    !     call HdfWriteReal2D_Z(dsetname,filename,(cmc*ibm_body(1:nx,xstart(2):xend(2),mov_ci) + cpc*ibm_body(1:nx,xstart(2):xend(2),mov_ci+1)))
-    ! end if
+    if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
+        filename = trim('Results/movie_zcut.h5')
+        cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
+        cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
+        call HdfWriteReal2D_Z(dsetname,filename,(cmc*ibm_body(1:nx,xstart(2):xend(2),mov_ci) + cpc*ibm_body(1:nx,xstart(2):xend(2),mov_ci+1)))
+    end if
 
 end subroutine InitMovie
 
-subroutine Movie_xcut(errorcode)
+subroutine Movie_xcut
 
     use param
 	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
@@ -101,17 +102,12 @@ subroutine Movie_xcut(errorcode)
 
     implicit none
 
-    integer, optional   :: errorcode
+    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cpc,cmc
     character*50        :: dsetname,filename,frame
 
     filename = trim('Results/movie_xcut.h5')
-    
-    if (present(errorcode)) then
-        frame = trim('ERROR')
-    else
-        write (frame,"(i5.5)") nint(time/tframe)
-    end if
+    write (frame,"(i5.5)") nint(time/tframe)
 
     cpx = (movie2Dx     - xc(mov_xk))/(xc(mov_xk+1) - xc(mov_xk))
 	cmx = (xc(mov_xk+1) - movie2Dx)  /(xc(mov_xk+1) - xc(mov_xk))
@@ -145,7 +141,7 @@ subroutine Movie_xcut(errorcode)
 
 end subroutine Movie_xcut
 
-subroutine Movie_ycut(errorcode)
+subroutine Movie_ycut
 
     use param
 	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
@@ -155,18 +151,14 @@ subroutine Movie_ycut(errorcode)
 
     implicit none
 
-    integer, optional   :: errorcode
+    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cmc,cpc
     character*50        :: dsetname,filename,frame
 
     if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
 
         filename = trim('Results/movie_ycut.h5')
-        if (present(errorcode)) then
-            frame = trim('ERROR')
-        else
-            write (frame,"(i5.5)") nint(time/tframe)
-        end if
+        write (frame,"(i5.5)") nint(time/tframe)
 
         cpx = (movie2Dy     - ym(mov_xj))/(ym(mov_xj+1) - ym(mov_xj))
         cmx = (ym(mov_xj+1) - movie2Dy)  /(ym(mov_xj+1) - ym(mov_xj))
@@ -202,7 +194,7 @@ subroutine Movie_ycut(errorcode)
 
 end subroutine Movie_ycut
 
-subroutine Movie_zcut(errorcode)
+subroutine Movie_zcut
 
     use param
 	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
@@ -212,18 +204,14 @@ subroutine Movie_zcut(errorcode)
 
     implicit none
 
-    integer, optional   :: errorcode
+    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cmc,cpc
     character*50        :: filename,dsetname,frame
 
     if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
 
         filename = trim('Results/movie_zcut.h5')
-        if (present(errorcode)) then
-            frame = trim('ERROR')
-        else
-            write (frame,"(i5.5)") nint(time/tframe)
-        end if
+        write (frame,"(i5.5)") nint(time/tframe)
 
         cpx = (movie2Dz     - zm(mov_xi))/(zm(mov_xi+1) - zm(mov_xi))
         cmx = (zm(mov_xi+1) - movie2Dz)  /(zm(mov_xi+1) - zm(mov_xi))
@@ -259,7 +247,7 @@ subroutine Movie_zcut(errorcode)
 
 end subroutine Movie_zcut
 
-subroutine Movie_outlet(errorcode)
+subroutine Movie_outlet
 
     use param
 	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
@@ -269,17 +257,13 @@ subroutine Movie_outlet(errorcode)
 
     implicit none
 
-    integer, optional   :: errorcode
+    
     character*50        :: dsetname,filename,frame
 
     if (xend(3).eq.nzm) then
 
         filename = trim('Results/movie_outlet.h5')
-        if (present(errorcode)) then
-            frame = trim('ERROR')
-        else
-            write (frame,"(i5.5)") nint(time/tframe)
-        end if
+        write (frame,"(i5.5)") nint(time/tframe)
     
         dsetname = trim("vx")//'/'//trim(frame)
         call HdfWriteReal2D_Z(dsetname,filename,0.5d0*(vx(1:nx,xstart(2):xend(2),nzm) + vx(1:nx,xstart(2):xend(2),nz)))
