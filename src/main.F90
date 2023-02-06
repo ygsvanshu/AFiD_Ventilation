@@ -314,7 +314,7 @@ program AFiD
 		endif
 
 		if (savemovie) then
-			if (mod(time,tframe) < dt) then
+			if ((mod(time,tframe) < dt).or.(vmax(1).gt.1.0d0)) then
 				call Movie_xcut
 				call Movie_ycut
 				call Movie_zcut
