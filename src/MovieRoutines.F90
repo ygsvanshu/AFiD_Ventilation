@@ -107,7 +107,7 @@ subroutine Movie_xcut
     character*50        :: dsetname,filename,frame
 
     filename = trim('Results/movie_xcut.h5')
-    write (frame,"(i5.5)") nint(time/tframe)
+    write (frame,"(i5.5)") ntime ! nint(time/tframe)
 
     cpx = (movie2Dx     - xc(mov_xk))/(xc(mov_xk+1) - xc(mov_xk))
 	cmx = (xc(mov_xk+1) - movie2Dx)  /(xc(mov_xk+1) - xc(mov_xk))
@@ -158,7 +158,7 @@ subroutine Movie_ycut
     if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
 
         filename = trim('Results/movie_ycut.h5')
-        write (frame,"(i5.5)") nint(time/tframe)
+        write (frame,"(i5.5)") ntime ! nint(time/tframe)
 
         cpx = (movie2Dy     - ym(mov_xj))/(ym(mov_xj+1) - ym(mov_xj))
         cmx = (ym(mov_xj+1) - movie2Dy)  /(ym(mov_xj+1) - ym(mov_xj))
@@ -211,7 +211,7 @@ subroutine Movie_zcut
     if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
 
         filename = trim('Results/movie_zcut.h5')
-        write (frame,"(i5.5)") nint(time/tframe)
+        write (frame,"(i5.5)") ntime ! nint(time/tframe)
 
         cpx = (movie2Dz     - zm(mov_xi))/(zm(mov_xi+1) - zm(mov_xi))
         cmx = (zm(mov_xi+1) - movie2Dz)  /(zm(mov_xi+1) - zm(mov_xi))
@@ -263,7 +263,7 @@ subroutine Movie_outlet
     if (xend(3).eq.nzm) then
 
         filename = trim('Results/movie_outlet.h5')
-        write (frame,"(i5.5)") nint(time/tframe)
+        write (frame,"(i5.5)") ntime ! nint(time/tframe)
     
         dsetname = trim("vx")//'/'//trim(frame)
         call HdfWriteReal2D_Z(dsetname,filename,0.5d0*(vx(1:nx,xstart(2):xend(2),nzm) + vx(1:nx,xstart(2):xend(2),nz)))
