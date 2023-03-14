@@ -216,6 +216,13 @@ SUBROUTINE read_from_bouin
             read(ss(2),*) tvel
 
         ELSEIF(line(1:3)=='508') THEN 
+            ! ###### OUTLET PARAMETERS ######  
+            call scan_string (line, 3, ss, narg)
+            read(ss(1),*) ocou
+            read(ss(2),*) ovsc
+            read(ss(3),*) odst
+
+        ELSEIF(line(1:3)=='509') THEN 
         ! ###### PERSON AND BREATH IBM ENABLED ######  
             call scan_string (line, 2, ss, narg)
             stringdummy1=ss(1)
@@ -239,12 +246,12 @@ SUBROUTINE read_from_bouin
                 call stop_config
             endif
 
-        ELSEIF(line(1:3)=='509') THEN 
+        ELSEIF(line(1:3)=='510') THEN 
         ! ###### FILENAME OF PERSON OBJ GEOMETRY ######  
             call scan_string (line, 1, ss, narg)
             person_objfile = ss(1)
 
-        ELSEIF(line(1:3)=='510') THEN 
+        ELSEIF(line(1:3)=='511') THEN 
         ! ###### PERSON GEOMETRY LOCATION AND SCALE ######  
             call scan_string (line, 4, ss, narg)
             read(ss(1),*) personx
@@ -252,20 +259,20 @@ SUBROUTINE read_from_bouin
             read(ss(3),*) personz
             read(ss(4),*) sclf
 
-        ELSEIF(line(1:3)=='511') THEN 
+        ELSEIF(line(1:3)=='512') THEN 
         ! ###### BREATH GEOMETRY LOCATION ######  
             call scan_string (line, 3, ss, narg)
             read(ss(1),*) breathx
             read(ss(2),*) breathy
             read(ss(3),*) breathz
 
-        ELSEIF(line(1:3)=='512') THEN 
+        ELSEIF(line(1:3)=='513') THEN 
         ! ###### BREATHING KERNEL OPTIONS ######  
             call scan_string (line, 2, ss, narg)
             read(ss(1),*) kernel_width_space
             read(ss(2),*) kernel_width_time
 
-        ELSEIF(line(1:3)=='513') THEN 
+        ELSEIF(line(1:3)=='514') THEN 
         ! ###### BOUNDARY CONDITIONS ######  
             call scan_string (line, 2, ss, narg)
             read(ss(1),*) inslws

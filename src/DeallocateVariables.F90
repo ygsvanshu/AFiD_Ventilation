@@ -59,16 +59,18 @@ subroutine DeallocateVariables
     call DestroyInt1dArray(kmv)
     call DestroyInt1dArray(kpv)
 
-    call DestroyReal1dArray(dcpdxc)
-    call DestroyReal1dArray(dccdxc)
-    call DestroyReal1dArray(dcmdxc)
-
-    call DestroyReal1dArray(dcpdxm)
-    call DestroyReal1dArray(dccdxm)
-    call DestroyReal1dArray(dcmdxm)
-
     call DestroyReal1dArray(icell)
     call DestroyReal1dArray(ocell)
+
+    call DestroyReal1dArray(igrid)
+    call DestroyReal1dArray(ogrid)
+
+    call DestroyReal2DArray(outvx)
+    call DestroyReal2DArray(outvy)
+    call DestroyReal2DArray(outvz)
+    call DestroyReal2DArray(outtemp)
+    call DestroyReal2DArray(outco2)
+    call DestroyReal2DArray(outh2o)
 
     if (statcalc) then
         ! X-CUT

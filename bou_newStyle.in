@@ -18,16 +18,16 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 
 
 ====> Grid specifications -----------------------------------------------------
-201 Number of grid nodes                     NXM NYM NZM        '192' '192' '192'
+201 Number of grid nodes                     NXM NYM NZM        '768' '768' '768'
 202 Axis length (vertical/stream/span)       ALX3D YLEN ZLEN    '1.0' '1.0' '1.0'
 203 Grid distribution scheme V-Ax            ISTR3              '6'
 204 Grid distribution parameter              STR3               '8'
 
 
 ====> Runtime limits ----------------------------------------------------------
-301 Max number of timesteps                  NTST               '100'  
-302 Max dimensionless time                   TMAX               '200'  
-303 Max wallclock time [s]                   WALLTIMEMAX        '3500'
+301 Max number of timesteps                  NTST               '1000000'  
+302 Max dimensionless time                   TMAX               '100'  
+303 Max wallclock time [s]                   WALLTIMEMAX        '83000'
 
 
 ====> Numerical parameters ----------------------------------------------------
@@ -36,7 +36,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
            3= 3rd order Runge Kutta 
 402 Enable dynamic timesteps (n/y)           IDTV               'y'
 403 FIRST or CONSTANT time step              DT                 '1.e-8'
-404 Min/Max dynamic time step                DTMIN DTMAX        '1.e-8' '5.e-3'
+404 Min/Max dynamic time step                DTMIN DTMAX        '1.e-8' '2.e-3'
 405 Stability param for dynamic steps        CFLMAX             '1.2'
 406 Max velocity divergence per step         RESID              '1.e-5'
     (mass conservation criterion)
@@ -54,13 +54,14 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
     (This quantity should be positive)
 505 Inlet vent dimension and height          ILEN IHEIGHT       '0.1' '0.95'
 506 Outlet vent dimension and height         OLEN OHEIGHT       '0.1' '0.05'
-507 Ventilation airflow velocity             IVEL TVEL          '1.57e-2' '1'
-508 Person and breath enabled (y/n)          PERSON BREATH      'y' 'y'
-509 Person geometry OBJfile                  OBJFILE            'bodies/sittingwoman03.obj' 
-510 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
-511 Breath geometry location and scale       BX BY BZ           '0.312' '0.5d0' '0.472'
-512 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
-513 Boundary Conditions (bottom/top)         inslws inslwn      '1' '1'
+507 Ventilation airflow velocity             IVEL TVEL          '1.57e-1' '1.57'
+508 Ventilation outlet parameters            OCOU OVSC ODST     '0.3' '10.0' '0.1' 
+509 Person and breath enabled (y/n)          PERSON BREATH      'y' 'y'
+510 Person geometry OBJfile                  OBJFILE            'sittingwoman03.obj' 
+511 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
+512 Breath geometry location and scale       BX BY BZ           '0.312' '0.5d0' '0.472'
+513 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
+514 Boundary Conditions (bottom/top)         inslws inslwn      '1' '1'
     (free-slip=0, no-slip=1)
 
 ====> Output parameters -------------------------------------------------------

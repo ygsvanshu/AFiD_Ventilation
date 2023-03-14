@@ -23,6 +23,7 @@ subroutine ImplicitAndUpdateVZ
     integer :: kmm,kpp
     real    :: alre,amm,acc,app,udz
     real    :: dxxvz,dzp
+    real    :: visc
 
     alre=al/ren
     udz=dz*al
@@ -48,6 +49,8 @@ subroutine ImplicitAndUpdateVZ
                 acc=ac3sk(kc)
                 app=ap3sk(kc)
 
+                call OutVisc(xm(kc),zm(ic),visc)
+
                 !   Second derivative in x-direction of vz
                 
                 if (kc.eq.1) then
@@ -64,7 +67,7 @@ subroutine ImplicitAndUpdateVZ
 
                 !    Calculate right hand side of Eq. 5 (VO96)
 
-                rhs(kc,jc,ic) = (ga*dq(kc,jc,ic) + ro*ruz(kc,jc,ic) + alre*dxxvz-dzp)*dt
+                rhs(kc,jc,ic) = (ga*dq(kc,jc,ic) + ro*ruz(kc,jc,ic) + visc*alre*dxxvz - dzp)*dt
 
                 !    Store the non-linear terms for the calculation of 
                 !    the next timestep

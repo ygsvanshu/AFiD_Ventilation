@@ -23,6 +23,7 @@ subroutine ExplicitTermsVX
     real    :: udzq,udyq
     real    :: dzzvx,dyyvx
     real    :: fcc,fmm
+    real    :: visc
 
     udy=dy*0.25
     udz=dz*0.25
@@ -51,45 +52,25 @@ subroutine ExplicitTermsVX
 
                 fcc = dx3c(kc)/g3rc(kc)
                 fmm = dx3c(km)/g3rc(kc)
-                !
-                ! vx vz term
-                !
-                !
-                !  d  q_x q_t 
-                ! -----------
-                !  d   t      
-                !
-                !
+
                 hxz=((((fcc*vz(kc,jc,ipp))+(fmm*vz(km,jc,ipp))) &
                     *(vx(kc,jc,ipp)+vx(kc,jc,ic))) &
                     -(((fcc*vz(kc,jc,ic))+(fmm*vz(km,jc,ic))) &
                     *(vx(kc,jc,ic)+vx(kc,jc,imm))))*udz
-                !
-                ! vx vy term
-                !
-                !
-                !  d  q_x q_r 
-                ! -----------
-                !  d   r      
-                !
+
                 hxy=((((fcc*vy(kc,jpp,ic))+(fmm*vy(km,jpp,ic))) &
                     *(vx(kc,jpp,ic)+vx(kc,jc,ic))) &
                     -(((fcc*vy(kc,jc,ic))+(fmm*vy(km,jc,ic))) &
                     *(vx(kc,jc,ic)+vx(kc,jmm,ic))))*udy
-                !
-                ! vx vx term
-                !
-                !
-                !  d  q_x q_x 
-                ! -----------
-                !  d   x      
-                !
+
                 hxx=((vx(kp,jc,ic)+vx(kc,jc,ic))*(vx(kp,jc,ic)+vx(kc,jc,ic)) &
                     -(vx(kc,jc,ic)+vx(km,jc,ic))*(vx(kc,jc,ic)+vx(km,jc,ic)) &
                     )*udx3c(kc)*0.25d0
 
-                dzzvx=(vx(kc,jc,imm) -2.0*vx(kc,jc,ic) + vx(kc,jc,ipp))*udzq
-                dyyvx=(vx(kc,jmm,ic) -2.0*vx(kc,jc,ic) + vx(kc,jpp,ic))*udyq
+                call OutVisc(xc(kc),zm(ic),visc)
+
+                dzzvx=(vx(kc,jc,imm) -2.0*vx(kc,jc,ic) + vx(kc,jc,ipp))*udzq*visc
+                dyyvx=(vx(kc,jmm,ic) -2.0*vx(kc,jc,ic) + vx(kc,jpp,ic))*udyq*visc
 
                 qcap(kc,jc,ic) =-(hxx+hxy+hxz)+dyyvx+dzzvx+temp(kc,jc,ic)+(lambda_h2o*h2o(kc,jc,ic))+(lambda_co2*co2(kc,jc,ic))
 

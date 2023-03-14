@@ -10,90 +10,63 @@
 
 subroutine ExplicitTermsH2O
 
-      use param
-      use local_arrays, only: vy,vx,vz,h2o,qh2o
-      use decomp_2d, only: xstart,xend
+    use param
+    use local_arrays, only: vy,vx,vz,h2o,qh2o
+    use decomp_2d, only: xstart,xend
 
-      implicit none
+    implicit none
 
-      integer :: jc,kc,ic
-      integer :: km,kp,jm,jp,im,ip
-      real    :: htx,hty,htz,udy,udz
-      real    :: udzq,udyq
-      real    :: dyyt,dzzt
-! =ModV21=Vanshu=2022=02=21======================================================
-      real    :: fcc,fmm
-! =End=of=ModV21=================================================================
+    integer :: jc,kc,ic
+    integer :: km,kp,jm,jp,im,ip
+    real    :: htx,hty,htz,udy,udz
+    real    :: udzq,udyq
+    real    :: dyyt,dzzt
+    real    :: fcc,fmm
 
-      udz=dz*0.25
-      udy=dy*0.25
-      udzq=dzq/pec
-      udyq=dyq/pec
+    udz=dz*0.25
+    udy=dy*0.25
+    udzq=dzq/pec
+    udyq=dyq/pec
 
-!$OMP   PARALLEL DO &
-!$OMP   DEFAULT(none) &
-!$OMP   SHARED(xstart,xend,vz,vy,vx,nxm) &
-!$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk,udz) &
-!$OMP   SHARED(udy,udzq,udyq,udx3c,h2o,qh2o) &
-!$OMP   PRIVATE(ic,jc,kc,im,ip,km,kp,jm,jp) &
-!$OMP   PRIVATE(htx,hty,htz,dyyt,dzzt)
+    !$OMP   PARALLEL DO &
+    !$OMP   DEFAULT(none) &
+    !$OMP   SHARED(xstart,xend,vz,vy,vx,nxm) &
+    !$OMP   SHARED(kmv,kpv,am3sk,ac3sk,ap3sk,udz) &
+    !$OMP   SHARED(udy,udzq,udyq,udx3c,h2o,qh2o) &
+    !$OMP   PRIVATE(ic,jc,kc,im,ip,km,kp,jm,jp) &
+    !$OMP   PRIVATE(htx,hty,htz,dyyt,dzzt)
 
-      do ic=xstart(3),xend(3)
-            im=ic-1
-            ip=ic+1
-            do jc=xstart(2),xend(2)
-                  jm=jc-1
-                  jp=jc+1
-                  do kc=2,nxm
-                        km=kc-1
-                        kp=kc+1
+    do ic=xstart(3),xend(3)
+        im=ic-1
+        ip=ic+1
+        do jc=xstart(2),xend(2)
+            jm=jc-1
+            jp=jc+1
+            do kc=2,nxm
+                km=kc-1
+                kp=kc+1
 
-! =ModV21=Vanshu=2022=02=21======================================================
-                        fcc = dx3c(kc)/g3rc(kc)    
-                        fmm = dx3c(km)/g3rc(kc)
-!
-!
-!    rho vz term
-!
-!                d  rho q_z
-!             -----------
-!                d   z      
-!
-                        htz = (((fmm*vz(km,jc,ip))+(fcc*vz(kc,jc,ip)))*(h2o(kc,jc,ip)+h2o(kc,jc,ic))- &
-                              ((fmm*vz(km,jc,ic))+(fcc*vz(kc,jc,ic)))*(h2o(kc,jc,ic)+h2o(kc,jc,im)) &
-                              )*udz
-!
-!    rho vy term
-!
-!                d  rho q_y 
-!             -----------
-!                d   y      
-!
-                        hty = (((fcc*vy(kc,jp,ic))+(fmm*vy(km,jp,ic)))*(h2o(kc,jp,ic)+h2o(kc,jc,ic))- &
-                              ((fcc*vy(kc,jc,ic))+(fmm*vy(km,jc,ic)))*(h2o(kc,jc,ic)+h2o(kc,jm,ic)) &
-                              )*udy
-!
-!    rho vx term
-!
-!                 d  rho q_x 
-!                -----------
-!                 d   x      
-!
-                        htx = ((vx(kp,jc,ic)+vx(kc,jc,ic))*(h2o(kp,jc,ic)+h2o(kc,jc,ic))- &
-                              (vx(kc,jc,ic)+vx(km,jc,ic))*(h2o(kc,jc,ic)+h2o(km,jc,ic)) &
-                              )*udx3c(kc)*0.25d0
+                fcc = dx3c(kc)/g3rc(kc)    
+                fmm = dx3c(km)/g3rc(kc)
 
-! =End=of=ModV21=================================================================
+                htz = (((fmm*vz(km,jc,ip))+(fcc*vz(kc,jc,ip)))*(h2o(kc,jc,ip)+h2o(kc,jc,ic))- &
+                    ((fmm*vz(km,jc,ic))+(fcc*vz(kc,jc,ic)))*(h2o(kc,jc,ic)+h2o(kc,jc,im)) &
+                    )*udz
 
-                        ! zz second derivatives of h2o
-                        dzzt = (h2o(kc,jc,ip) -2.0*h2o(kc,jc,ic) + h2o(kc,jc,im))*udzq
-      
-                        ! yy second derivatives of h2o
-                        dyyt = (h2o(kc,jp,ic) -2.0*h2o(kc,jc,ic) + h2o(kc,jm,ic))*udyq
+                hty = (((fcc*vy(kc,jp,ic))+(fmm*vy(km,jp,ic)))*(h2o(kc,jp,ic)+h2o(kc,jc,ic))- &
+                    ((fcc*vy(kc,jc,ic))+(fmm*vy(km,jc,ic)))*(h2o(kc,jc,ic)+h2o(kc,jm,ic)) &
+                    )*udy
 
-                        qh2o(kc,jc,ic) = -(htx+hty+htz)+dyyt+dzzt
+                htx = ((vx(kp,jc,ic)+vx(kc,jc,ic))*(h2o(kp,jc,ic)+h2o(kc,jc,ic))- &
+                    (vx(kc,jc,ic)+vx(km,jc,ic))*(h2o(kc,jc,ic)+h2o(km,jc,ic)) &
+                    )*udx3c(kc)*0.25d0
 
-                  enddo
+                dzzt = (h2o(kc,jc,ip) -2.0*h2o(kc,jc,ic) + h2o(kc,jc,im))*udzq
+                dyyt = (h2o(kc,jp,ic) -2.0*h2o(kc,jc,ic) + h2o(kc,jm,ic))*udyq
+
+                qh2o(kc,jc,ic) = -(htx+hty+htz)+dyyt+dzzt
+
+            enddo
             
             dzzt = (h2o(1,jc,ip) -2.0*h2o(1,jc,ic) + h2o(1,jc,im))*udzq
             dyyt = (h2o(1,jp,ic) -2.0*h2o(1,jc,ic) + h2o(1,jm,ic))*udyq
@@ -105,10 +78,11 @@ subroutine ExplicitTermsH2O
 
             qh2o(nx,jc,ic) = dyyt+dzzt
 
-            enddo
-      enddo
+        enddo
+    enddo
 
-!$OMP  END PARALLEL DO
+    !$OMP  END PARALLEL DO
 
-      return
-end
+    return
+
+    end

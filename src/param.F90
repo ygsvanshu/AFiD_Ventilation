@@ -28,6 +28,7 @@ module param
     real            :: ray,pra,lambda_co2,lambda_h2o
     real            :: iheight,ilen,oheight,olen
     real            :: ivel,tvel
+    real            :: ocou,ovsc,odst
     logical         :: person_on=.false.
     logical         :: breath_on=.false.
     character*50    :: person_objfile
@@ -55,30 +56,18 @@ module param
     real :: time
 
     !******* Grid parameters**************************
-
-    real :: dx,dy,dz,dxq,dyq,dzq
-        
+    real :: dx,dy,dz,dxq,dyq,dzq        
     real, allocatable, dimension(:) :: xc,xm
     real, allocatable, dimension(:) :: yc,ym
     real, allocatable, dimension(:) :: zc,zm
     real, allocatable, dimension(:) :: g3rc,g3rm
-    ! =ModR10=Robert=2020-11-02=====================================================
     real, allocatable, dimension(:) :: dx3c,dx3m ! Additional Grid parameters
-    ! =End=of=ModR10================================================================
-    !******* QUANTITIES FOR DERIVATIVES******************
     real, allocatable, dimension(:) :: udx3c,udx3m
-    !******* Grid indices**************************************
     integer, allocatable, dimension(:) :: kmc,kpc,kmv,kpv
-    !******* Metric coefficients *******************************
     real, allocatable, dimension(:) :: ap3ck,ac3ck,am3ck
     real, allocatable, dimension(:) :: ap3sk,ac3sk,am3sk
     real, allocatable, dimension(:) :: ap3ssk,ac3ssk,am3ssk   
-    ! =ModV13=Vanshu=2020-11-12=====================================================
-    real :: dccb1,dccb2,dccb3,dcct1,dcct2,dcct3
-    real :: dcmb1,dcmb2,dcmb3,dcmt1,dcmt2,dcmt3
-    real, allocatable, dimension(:) :: dcpdxc,dccdxc,dcmdxc
-    real, allocatable, dimension(:) :: dcpdxm,dccdxm,dcmdxm
-    ! =End=of=ModV13================================================================
+
     !******* Variables for FFTW and Poisson solver****************
     real, allocatable, dimension(:) :: ak2,ap
     real, allocatable, dimension(:) :: ak1,ao
@@ -168,7 +157,11 @@ module vent_arrays
     integer                             :: oxfst,oxfen
     real                                :: iflux,oflux
     real                                :: iarea,oarea
+    real                                :: varea,harea
     real,allocatable,dimension(:)       :: icell,ocell
+    real,allocatable,dimension(:)       :: igrid,ogrid
+    real,allocatable,dimension(:,:)     :: outvx,outvy,outvz
+    real,allocatable,dimension(:,:)     :: outtemp,outco2,outh2o
 end module vent_arrays
 
 !=====================================================    

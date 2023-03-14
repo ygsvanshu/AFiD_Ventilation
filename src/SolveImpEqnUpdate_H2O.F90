@@ -49,11 +49,7 @@ subroutine SolveImpEqnUpdate_H2O
             call dgttrs('N',nx,1,amkT,ackT,apkT,appk,ipkv,rx1d,nx,info)
             
             do kc=1,nx
-                rhs(kc,jc,ic) = rx1d(kc)
-            end do
-
-            do kc=1,nx
-                h2o(kc,jc,ic) = h2o(kc,jc,ic) + rhs(kc,jc,ic)
+                h2o(kc,jc,ic) = h2o(kc,jc,ic) + rx1d(kc)
             end do
         end do
     end do

@@ -13,7 +13,7 @@
 subroutine WriteFlowField
 	
 	use param
-	use local_arrays, only: vz,vy,vx,temp,co2,h2o
+	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
 	
 	implicit none
 	
@@ -25,6 +25,8 @@ subroutine WriteFlowField
 	call HdfWriteRealHalo3D(filnam1,vy)
 	filnam1 = trim('continua_vz.h5')
 	call HdfWriteRealHalo3D(filnam1,vz)
+	filnam1 = trim('continua_pr.h5')
+	call HdfWriteRealHalo3D(filnam1,pr)
 	filnam1 = trim('continua_temp.h5')
 	call HdfWriteRealHalo3D(filnam1,temp)
 	filnam1 = trim('continua_co2.h5')

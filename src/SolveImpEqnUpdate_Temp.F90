@@ -47,13 +47,9 @@ subroutine SolveImpEqnUpdate_Temp
 
             call dgttrf(nx,amkT,ackT,apkT,appk,ipkv,info)
             call dgttrs('N',nx,1,amkT,ackT,apkT,appk,ipkv,rx1d,nx,info)
-            
-            do kc=1,nx
-                rhs(kc,jc,ic) = rx1d(kc)
-            end do
 
             do kc=1,nx
-                temp(kc,jc,ic) = temp(kc,jc,ic) + rhs(kc,jc,ic)
+                temp(kc,jc,ic) = temp(kc,jc,ic) + rx1d(kc)
             end do
         end do
     end do

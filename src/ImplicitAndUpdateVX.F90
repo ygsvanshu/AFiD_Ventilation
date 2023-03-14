@@ -23,6 +23,7 @@ subroutine ImplicitAndUpdateVX
     integer :: km,kp,ic
     real    :: alre,udx3
     real    :: amm,acc,app,dxp,dxxvx
+    real    :: visc
 
     alre=al/ren
 
@@ -47,6 +48,8 @@ subroutine ImplicitAndUpdateVX
                 acc=ac3ck(kc)
                 app=ap3ck(kc)
 
+                call OutVisc(xc(kc),zm(ic),visc)
+
                 ! Second derivative in x-direction of vx
                 dxxvx = vx(kp,jc,ic)*app + vx(kc,jc,ic)*acc + vx(km,jc,ic)*amm
 
@@ -54,7 +57,7 @@ subroutine ImplicitAndUpdateVX
                 dxp = (pr(kc,jc,ic) - pr(km,jc,ic))*udx3
 
                 ! Calculate right hand side of Eq. 5 (VO96)
-                rhs(kc,jc,ic) = (ga*qcap(kc,jc,ic) + ro*rux(kc,jc,ic) + alre*dxxvx - dxp)*dt 
+                rhs(kc,jc,ic) = (ga*qcap(kc,jc,ic) + ro*rux(kc,jc,ic) + visc*alre*dxxvx - dxp)*dt 
 
                 ! Store the non-linear terms for the calculation of the next timestep
                 rux(kc,jc,ic)=qcap(kc,jc,ic)
@@ -64,15 +67,8 @@ subroutine ImplicitAndUpdateVX
 
     !$OMP END PARALLEL DO
 
-    rhs(1,:,:)  = 0.0d0
-    rhs(nx,:,:) = 0.0d0
-
     ! Solve equation and update velocity
     call SolveImpEqnUpdate_X
-
-    !  Set boundary conditions on the vertical velocity at top and bottom plates. This seems necessary.
-    vx(1,:,:)  = 0.0d0
-    vx(nx,:,:) = 0.0d0
 
     return
 

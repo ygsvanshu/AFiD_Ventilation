@@ -13,67 +13,67 @@
 
 subroutine InitMovie
 
-	use param
-	use decomp_2d, only: xstart,xend
+    use param
+    use decomp_2d, only: xstart,xend
     use local_arrays, only: ibm_body
-	use movie_indices
-	use mpih
+    use movie_indices
+    use mpih
 
     implicit none
 
-	integer         :: i,j,k
+    integer         :: i,j,k
     real            :: cpc,cmc
     character*50    :: dsetname,filename,frame
 
-	! For the X grid
-	do k=1,nx-1
-		if ((xc(k).le.movie2Dx).and.(xc(k+1).gt.movie2Dx)) mov_xk = k
-	end do
-	do j=1,nym-1
-		if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_xj = j
-	end do
-	do i=1,nzm-1
-		if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_xi = i
-	end do
+    ! For the X grid
+    do k=1,nx-1
+        if ((xc(k).le.movie2Dx).and.(xc(k+1).gt.movie2Dx)) mov_xk = k
+    end do
+    do j=1,nym-1
+        if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_xj = j
+    end do
+    do i=1,nzm-1
+        if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_xi = i
+    end do
 
-	! For the Y grid
-	do k=1,nxm-1
-		if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_yk = k
-	end do
-	do j=1,ny-1
-		if ((yc(j).le.movie2Dy).and.(yc(j+1).gt.movie2Dy)) mov_yj = j
-	end do
-	do i=1,nzm-1
-		if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_yi = i
-	end do
+    ! For the Y grid
+    do k=1,nxm-1
+        if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_yk = k
+    end do
+    do j=1,ny-1
+        if ((yc(j).le.movie2Dy).and.(yc(j+1).gt.movie2Dy)) mov_yj = j
+    end do
+    do i=1,nzm-1
+        if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_yi = i
+    end do
 
-	! For the Z grid
-	do k=1,nxm-1
-		if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_zk = k
-	end do
-	do j=1,nym-1
-		if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_zj = j
-	end do
-	do i=1,nz-1
-		if ((zc(i).le.movie2Dz).and.(zc(i+1).gt.movie2Dz)) mov_zi = i
-	end do
+    ! For the Z grid
+    do k=1,nxm-1
+        if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_zk = k
+    end do
+    do j=1,nym-1
+        if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_zj = j
+    end do
+    do i=1,nz-1
+        if ((zc(i).le.movie2Dz).and.(zc(i+1).gt.movie2Dz)) mov_zi = i
+    end do
 
     ! For the C grid
-	do k=1,nxm-1
-		if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_ck = k
-	end do
-	do j=1,nym-1
-		if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_cj = j
-	end do
-	do i=1,nzm-1
-		if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_ci = i
-	end do
+    do k=1,nxm-1
+        if ((xm(k).le.movie2Dx).and.(xm(k+1).gt.movie2Dx)) mov_ck = k
+    end do
+    do j=1,nym-1
+        if ((ym(j).le.movie2Dy).and.(ym(j+1).gt.movie2Dy)) mov_cj = j
+    end do
+    do i=1,nzm-1
+        if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_ci = i
+    end do
 
     dsetname = trim("ibm_body")
 
     filename = trim('Results/movie_xcut.h5')
     cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
-	cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
+    cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
     call HdfWriteReal2D_X(dsetname,filename,(cmc*ibm_body(mov_ck,xstart(2):xend(2),xstart(3):xend(3)) + cpc*ibm_body(mov_ck+1,xstart(2):xend(2),xstart(3):xend(3))))
 
     if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
@@ -95,14 +95,13 @@ end subroutine InitMovie
 subroutine Movie_xcut
 
     use param
-	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
-	use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
+    use decomp_2d, only: xstart,xend
     use movie_indices
-	use mpih
+    use mpih
 
     implicit none
 
-    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cpc,cmc
     character*50        :: dsetname,filename,frame
 
@@ -110,13 +109,13 @@ subroutine Movie_xcut
     write (frame,"(i5.5)") nint(time/tframe)
 
     cpx = (movie2Dx     - xc(mov_xk))/(xc(mov_xk+1) - xc(mov_xk))
-	cmx = (xc(mov_xk+1) - movie2Dx)  /(xc(mov_xk+1) - xc(mov_xk))
-	cpy = (movie2Dx     - xm(mov_yk))/(xm(mov_yk+1) - xm(mov_yk))
-	cmy = (xm(mov_yk+1) - movie2Dx)  /(xm(mov_yk+1) - xm(mov_yk))
-	cpz = (movie2Dx     - xm(mov_zk))/(xm(mov_zk+1) - xm(mov_zk))
-	cmz = (xm(mov_zk+1) - movie2Dx)  /(xm(mov_zk+1) - xm(mov_zk))
+    cmx = (xc(mov_xk+1) - movie2Dx)  /(xc(mov_xk+1) - xc(mov_xk))
+    cpy = (movie2Dx     - xm(mov_yk))/(xm(mov_yk+1) - xm(mov_yk))
+    cmy = (xm(mov_yk+1) - movie2Dx)  /(xm(mov_yk+1) - xm(mov_yk))
+    cpz = (movie2Dx     - xm(mov_zk))/(xm(mov_zk+1) - xm(mov_zk))
+    cmz = (xm(mov_zk+1) - movie2Dx)  /(xm(mov_zk+1) - xm(mov_zk))
     cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
-	cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
+    cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
 
     dsetname = trim("vx")//'/'//trim(frame)
     call HdfWriteReal2D_X(dsetname,filename,(cmx*vx(mov_xk,xstart(2):xend(2),xstart(3):xend(3)) + cpx*vx(mov_xk+1,xstart(2):xend(2),xstart(3):xend(3))))
@@ -144,14 +143,13 @@ end subroutine Movie_xcut
 subroutine Movie_ycut
 
     use param
-	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
-	use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
+    use decomp_2d, only: xstart,xend
     use movie_indices
-	use mpih
+    use mpih
 
     implicit none
 
-    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cmc,cpc
     character*50        :: dsetname,filename,frame
 
@@ -197,14 +195,13 @@ end subroutine Movie_ycut
 subroutine Movie_zcut
 
     use param
-	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
-	use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
+    use decomp_2d, only: xstart,xend
     use movie_indices
-	use mpih
+    use mpih
 
     implicit none
 
-    
 	real                :: cpx,cmx,cpy,cmy,cpz,cmz,cmc,cpc
     character*50        :: filename,dsetname,frame
 
@@ -250,14 +247,13 @@ end subroutine Movie_zcut
 subroutine Movie_outlet
 
     use param
-	use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
-	use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
+    use decomp_2d, only: xstart,xend
     use movie_indices
-	use mpih
+    use mpih
 
     implicit none
 
-    
     character*50        :: dsetname,filename,frame
 
     if (xend(3).eq.nzm) then

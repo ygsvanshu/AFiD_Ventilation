@@ -67,12 +67,16 @@ subroutine ReadFlowField
         call HdfReadRealHalo3D(filename,vy,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
         filename = trim('continua_vz.h5')
         call HdfReadRealHalo3D(filename,vz,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
+        filename = trim('continua_pr.h5')
+        call HdfReadRealHalo3D(filename,pr,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
         filename = trim('continua_temp.h5')
         call HdfReadRealHalo3D(filename,temp,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
         filename = trim('continua_co2.h5')
         call HdfReadRealHalo3D(filename,co2,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
         filename = trim('continua_h2o.h5')
         call HdfReadRealHalo3D(filename,h2o,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
+        filename = trim('ibm_body.h5')
+        call HdfReadRealHalo3D(filename,ibm_body,xstart(2),xend(2),xstart(3),xend(3),nx,ny,nz)
     endif
 
     return
