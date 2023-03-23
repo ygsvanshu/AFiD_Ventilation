@@ -24,7 +24,7 @@
       implicit none
       real, intent(in) :: n
       
-      call MPI_BCAST(n,1,MDP,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(n,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
       return
       end subroutine MpiBcastReal

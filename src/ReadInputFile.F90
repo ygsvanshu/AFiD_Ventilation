@@ -339,6 +339,11 @@ SUBROUTINE read_from_bouin
                 read(ss(2),*) movie2Dy
                 read(ss(3),*) movie2Dz
 
+        ELSEIF(line(1:3)=='606') THEN 
+            ! ###### SAVE CONTINUA CHECKPOINT ######
+                call scan_string (line, 1, ss, narg)
+                read(ss(1),*) tcontinua
+
         ENDIF 
 
 222 CONTINUE

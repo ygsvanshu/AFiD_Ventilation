@@ -48,6 +48,8 @@ module param
     logical         :: savemovie=.false.
     real            :: tframe
     real            :: movie2Dx,movie2Dy,movie2Dz
+    
+    real            :: tcontinua
 
     !=================================================
     !       end of input file

@@ -315,6 +315,12 @@ program AFiD
             end if
         end if
 
+        if ( mod((ti(2)-tin(1)), tcontinua) .lt. (ti(2)-ti(1)) ) then
+            call WriteFlowField
+            call WriteOutlet
+            if (statcalc.and.(time.gt.tsta)) call WriteStatsEnd
+        end if
+
         if( (ti(2) - tin(1)) .gt. walltimemax) errorcode = 334
         if( ntime .eq. ntst ) errorcode = 555 
         call MpiBcastInt(errorcode)
