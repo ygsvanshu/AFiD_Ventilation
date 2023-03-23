@@ -64,20 +64,22 @@ subroutine InitVariables
     call AllocateInt1dArray(kmv,1,nx)
     call AllocateInt1dArray(kpv,1,nx)
 
-    call AllocateReal1dArray(dcpdxc,1,nx)
-    call AllocateReal1dArray(dccdxc,1,nx)
-    call AllocateReal1dArray(dcmdxc,1,nx)
-
-    call AllocateReal1dArray(dcpdxm,1,nx)
-    call AllocateReal1dArray(dccdxm,1,nx)
-    call AllocateReal1dArray(dcmdxm,1,nx)
-
     !-------------------------------------------------
     ! Arrays for vents  
     !-------------------------------------------------
 
     call AllocateReal1dArray(icell,1,nxm)
     call AllocateReal1dArray(ocell,1,nxm)
+
+    call AllocateReal1dArray(igrid,1,nx)
+    call AllocateReal1dArray(ogrid,1,nx)
+
+    call AllocateReal2dArray(outvx,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2dArray(outvy,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2dArray(outvz,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2dArray(outtemp,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2dArray(outco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
+    call AllocateReal2dArray(outh2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
 
     !-------------------------------------------------
     ! Arrays for statistics    

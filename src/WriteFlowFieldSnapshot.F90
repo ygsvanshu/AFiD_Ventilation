@@ -14,7 +14,7 @@
 subroutine WriteFlowFieldSnapshot
 
     use param
-    use local_arrays, only:vz,vy,vx,temp,co2,h2o
+    use local_arrays, only:vx,vy,vz,pr,temp,co2,h2o
 
     implicit none
 
@@ -44,6 +44,10 @@ subroutine WriteFlowFieldSnapshot
     filnam1 = trim('Results/Vz/continua_vz')
     namfile=trim(trim(filnam1)//trim(citime)//'.h5')
     call HdfWriteRealHalo3D(namfile,vz)
+
+    filnam1 = trim('Results/Pr/continua_pr')
+    namfile=trim(trim(filnam1)//trim(citime)//'.h5')
+    call HdfWriteRealHalo3D(namfile,pr)
 
     filnam1 = trim('Results/Temp/continua_temp')
     namfile=trim(trim(filnam1)//trim(citime)//'.h5')

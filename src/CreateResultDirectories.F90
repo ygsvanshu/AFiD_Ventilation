@@ -20,6 +20,7 @@ subroutine CreateResultDirectories
     call system('mkdir -p Results/Vx')
     call system('mkdir -p Results/Vy')
     call system('mkdir -p Results/Vz')
+    call system('mkdir -p Results/Pr')
     call system('mkdir -p Results/Temp')
     call system('mkdir -p Results/CO2')
     call system('mkdir -p Results/H2O')

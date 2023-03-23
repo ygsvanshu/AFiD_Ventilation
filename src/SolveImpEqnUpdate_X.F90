@@ -24,8 +24,9 @@ subroutine SolveImpEqnUpdate_X
     integer :: ipkv(nx)
     integer :: jc,kc,info,ic
     real    :: betadx,ackl_b,ibmx
+    real    :: visc
 
-    betadx=beta*al
+    betadx=0.5d0*al*dt/ren
 
     do ic=xstart(3),xend(3)
         do jc=xstart(2),xend(2)
@@ -36,11 +37,12 @@ subroutine SolveImpEqnUpdate_X
             rx1d(1) = 0.0d0 - vx(1,jc,ic)
 
             do kc=2,nxm
+                call OutVisc(xc(kc),zm(ic),visc)
                 ibmx     = 0.5d0*(ibm_body(kc,jc,ic)+ibm_body(kc-1,jc,ic))
-                ackl_b   = 1.0d0/(1.0d0-ac3ck(kc)*betadx)
-                amkl(kc) = -am3ck(kc)*betadx*ackl_b*(1.0d0-ibmx)
+                ackl_b   = 1.0d0/(1.0d0-ac3ck(kc)*betadx*visc)
+                amkl(kc) = -am3ck(kc)*betadx*visc*ackl_b*(1.0d0-ibmx)
                 ackl(kc) = 1.0d0
-                apkl(kc) = -ap3ck(kc)*betadx*ackl_b*(1.0d0-ibmx)
+                apkl(kc) = -ap3ck(kc)*betadx*visc*ackl_b*(1.0d0-ibmx)
                 rx1d(kc) = rhs(kc,jc,ic)*ackl_b*(1.0d0-ibmx) - vx(kc,jc,ic)*ibmx
             enddo
         
@@ -56,12 +58,8 @@ subroutine SolveImpEqnUpdate_X
             call dgttrf(nx,amkT,ackT,apkT,appk,ipkv,info)
             call dgttrs('N',nx,1,amkT,ackT,apkT,appk,ipkv,rx1d,nx,info)
             
-            do kc=2,nxm
-                rhs(kc,jc,ic) = rx1d(kc)
-            end do
-
-            do kc=2,nxm
-                vx(kc,jc,ic) = vx(kc,jc,ic) + rhs(kc,jc,ic)
+            do kc=1,nx
+                vx(kc,jc,ic) = vx(kc,jc,ic) + rx1d(kc)
             end do
         end do
     end do
