@@ -12,8 +12,9 @@
 subroutine SolveImpEqnUpdate_X
 
     use param
-    use local_arrays, only : vx,rhs,ibm_body
     use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,rhs,ibm_body
+    use vent_arrays, only: outvscx
 
     implicit none
 
@@ -24,7 +25,6 @@ subroutine SolveImpEqnUpdate_X
     integer :: ipkv(nx)
     integer :: jc,kc,info,ic
     real    :: betadx,ackl_b,ibmx
-    real    :: visc
 
     betadx=0.5d0*al*dt/ren
 
@@ -37,12 +37,11 @@ subroutine SolveImpEqnUpdate_X
             rx1d(1) = 0.0d0 - vx(1,jc,ic)
 
             do kc=2,nxm
-                call OutVisc(xc(kc),zm(ic),visc)
                 ibmx     = 0.5d0*(ibm_body(kc,jc,ic)+ibm_body(kc-1,jc,ic))
-                ackl_b   = 1.0d0/(1.0d0-ac3ck(kc)*betadx*visc)
-                amkl(kc) = -am3ck(kc)*betadx*visc*ackl_b*(1.0d0-ibmx)
+                ackl_b   = 1.0d0/(1.0d0-ac3ck(kc)*betadx*outvscx(kc,ic))
+                amkl(kc) = -am3ck(kc)*betadx*outvscx(kc,ic)*ackl_b*(1.0d0-ibmx)
                 ackl(kc) = 1.0d0
-                apkl(kc) = -ap3ck(kc)*betadx*visc*ackl_b*(1.0d0-ibmx)
+                apkl(kc) = -ap3ck(kc)*betadx*outvscx(kc,ic)*ackl_b*(1.0d0-ibmx)
                 rx1d(kc) = rhs(kc,jc,ic)*ackl_b*(1.0d0-ibmx) - vx(kc,jc,ic)*ibmx
             enddo
         

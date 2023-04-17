@@ -14,8 +14,9 @@
 subroutine ImplicitAndUpdateVX
 
     use param
-    use local_arrays, only: vx,rhs,rux,qcap,pr
     use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,rhs,rux,qcap,pr
+    use vent_arrays, only: outvscx
 
     implicit none
 
@@ -23,7 +24,6 @@ subroutine ImplicitAndUpdateVX
     integer :: km,kp,ic
     real    :: alre,udx3
     real    :: amm,acc,app,dxp,dxxvx
-    real    :: visc
 
     alre=al/ren
 
@@ -48,8 +48,6 @@ subroutine ImplicitAndUpdateVX
                 acc=ac3ck(kc)
                 app=ap3ck(kc)
 
-                call OutVisc(xc(kc),zm(ic),visc)
-
                 ! Second derivative in x-direction of vx
                 dxxvx = vx(kp,jc,ic)*app + vx(kc,jc,ic)*acc + vx(km,jc,ic)*amm
 
@@ -57,7 +55,7 @@ subroutine ImplicitAndUpdateVX
                 dxp = (pr(kc,jc,ic) - pr(km,jc,ic))*udx3
 
                 ! Calculate right hand side of Eq. 5 (VO96)
-                rhs(kc,jc,ic) = (ga*qcap(kc,jc,ic) + ro*rux(kc,jc,ic) + visc*alre*dxxvx - dxp)*dt 
+                rhs(kc,jc,ic) = (ga*qcap(kc,jc,ic) + ro*rux(kc,jc,ic) + outvscx(kc,ic)*alre*dxxvx - dxp)*dt 
 
                 ! Store the non-linear terms for the calculation of the next timestep
                 rux(kc,jc,ic)=qcap(kc,jc,ic)

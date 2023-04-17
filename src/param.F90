@@ -164,6 +164,7 @@ module vent_arrays
     real,allocatable,dimension(:)       :: igrid,ogrid
     real,allocatable,dimension(:,:)     :: outvx,outvy,outvz
     real,allocatable,dimension(:,:)     :: outtemp,outco2,outh2o
+    real,allocatable,dimension(:,:)     :: outvscx,outvscy,outvscz
 end module vent_arrays
 
 !=====================================================    

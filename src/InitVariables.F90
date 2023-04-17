@@ -81,6 +81,10 @@ subroutine InitVariables
     call AllocateReal2dArray(outco2,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
     call AllocateReal2dArray(outh2o,1,nx,xstart(2)-lvlhalo,xend(2)+lvlhalo)
 
+    call AllocateReal2dArray(outvscx,1,nx,xstart(3),xend(3))
+    call AllocateReal2dArray(outvscy,1,nx,xstart(3),xend(3))
+    call AllocateReal2dArray(outvscz,1,nx,xstart(3),xend(3))
+
     !-------------------------------------------------
     ! Arrays for statistics    
     !-------------------------------------------------

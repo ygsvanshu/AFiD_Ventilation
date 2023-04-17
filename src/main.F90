@@ -142,6 +142,7 @@ program AFiD
 
     call InitPressureSolver
     call InitVents  ! Initialize vent indices and cell areas
+    call InitVisc   ! Initialize artificial viscosity to stabilize the outlet
 
     if(readflow) then
         if(ismaster) write(6,*) 'Reading initial condition from file'

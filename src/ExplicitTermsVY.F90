@@ -11,8 +11,10 @@
 subroutine ExplicitTermsVY
 
     use param
-    use local_arrays, only: vx,vy,vz,dph
     use decomp_2d, only: xstart,xend
+    use local_arrays, only: vx,vy,vz,dph
+    use vent_arrays, only: outvscy
+
 
     implicit none
 
@@ -22,7 +24,6 @@ subroutine ExplicitTermsVY
     real    :: udy,udz,hyx,hyy,hyz
     real    :: dyyvy, dzzvy
     real    :: fpp,fpc,fmc,fmm
-    real    :: visc
 
     udyq=dyq/ren
     udzq=dzq/ren
@@ -71,10 +72,8 @@ subroutine ExplicitTermsVY
                     *(vz(kc,jc,ic)+vz(kc,jmm,ic)) &
                     )*udz
 
-                call OutVisc(xm(kc),zm(ic),visc)
-
-                dyyvy=(vy(kc,jpp,ic) -2.0*vy(kc,jc,ic) + vy(kc,jmm,ic))*udyq*visc
-                dzzvy=(vy(kc,jc,ipp) -2.0*vy(kc,jc,ic) + vy(kc,jc,imm))*udzq*visc
+                dyyvy=(vy(kc,jpp,ic) -2.0*vy(kc,jc,ic) + vy(kc,jmm,ic))*udyq*outvscy(kc,ic)
+                dzzvy=(vy(kc,jc,ipp) -2.0*vy(kc,jc,ic) + vy(kc,jc,imm))*udzq*outvscy(kc,ic)
 
                 dph(kc,jc,ic)=-(hyx+hyy+hyz)+dyyvy+dzzvy
 

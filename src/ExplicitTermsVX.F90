@@ -11,8 +11,9 @@
 subroutine ExplicitTermsVX
 
     use param
-    use local_arrays, only: vz,vy,vx,temp,co2,h2o,qcap
     use decomp_2d, only: xstart,xend
+    use local_arrays, only: vz,vy,vx,temp,co2,h2o,qcap
+    use vent_arrays, only: outvscx
 
     implicit none
 
@@ -23,7 +24,6 @@ subroutine ExplicitTermsVX
     real    :: udzq,udyq
     real    :: dzzvx,dyyvx
     real    :: fcc,fmm
-    real    :: visc
 
     udy=dy*0.25
     udz=dz*0.25
@@ -67,10 +67,8 @@ subroutine ExplicitTermsVX
                     -(vx(kc,jc,ic)+vx(km,jc,ic))*(vx(kc,jc,ic)+vx(km,jc,ic)) &
                     )*udx3c(kc)*0.25d0
 
-                call OutVisc(xc(kc),zm(ic),visc)
-
-                dzzvx=(vx(kc,jc,imm) -2.0*vx(kc,jc,ic) + vx(kc,jc,ipp))*udzq*visc
-                dyyvx=(vx(kc,jmm,ic) -2.0*vx(kc,jc,ic) + vx(kc,jpp,ic))*udyq*visc
+                dzzvx=(vx(kc,jc,imm) -2.0*vx(kc,jc,ic) + vx(kc,jc,ipp))*udzq*outvscx(kc,ic)
+                dyyvx=(vx(kc,jmm,ic) -2.0*vx(kc,jc,ic) + vx(kc,jpp,ic))*udyq*outvscx(kc,ic)
 
                 qcap(kc,jc,ic) =-(hxx+hxy+hxz)+dyyvx+dzzvx+temp(kc,jc,ic)+(lambda_h2o*h2o(kc,jc,ic))+(lambda_co2*co2(kc,jc,ic))
 

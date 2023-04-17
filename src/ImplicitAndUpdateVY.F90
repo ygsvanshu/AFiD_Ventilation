@@ -14,8 +14,9 @@
 subroutine ImplicitAndUpdateVY
 
     use param
-    use local_arrays, only: vy,ruy,pr,rhs,dph
     use decomp_2d, only: xstart,xend
+    use local_arrays, only: vy,ruy,pr,rhs,dph
+    use vent_arrays, only: outvscy
 
     implicit none
 
@@ -24,7 +25,6 @@ subroutine ImplicitAndUpdateVY
     real    :: alre,udy
     real    :: amm,acc,app
     real    :: dyp,dxxvy
-    real    :: visc
 
     alre=al/ren
     udy=dy*al
@@ -50,8 +50,6 @@ subroutine ImplicitAndUpdateVY
                 acc=ac3sk(kc)
                 app=ap3sk(kc)
 
-                call OutVisc(xm(kc),zm(ic),visc)
-
                 !   Second derivative in x-direction of vy
                 
                 if (kc.eq.1) then
@@ -68,7 +66,7 @@ subroutine ImplicitAndUpdateVY
 
                 !    Calculate right hand side of Eq. 5 (VO96)
 
-                rhs(kc,jc,ic) = (ga*dph(kc,jc,ic) + ro*ruy(kc,jc,ic) + visc*alre*dxxvy - dyp)*dt
+                rhs(kc,jc,ic) = (ga*dph(kc,jc,ic) + ro*ruy(kc,jc,ic) + outvscy(kc,ic)*alre*dxxvy - dyp)*dt
 
                 !    Store the non-linear terms for the calculation of 
                 !    the next timestep

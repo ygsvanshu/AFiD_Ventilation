@@ -72,6 +72,10 @@ subroutine DeallocateVariables
     call DestroyReal2DArray(outco2)
     call DestroyReal2DArray(outh2o)
 
+    call DestroyReal2DArray(outvscx)
+    call DestroyReal2DArray(outvscy)
+    call DestroyReal2DArray(outvscz)
+
     if (statcalc) then
         ! X-CUT
         call DestroyReal2DArray(vx_m1_xcut)

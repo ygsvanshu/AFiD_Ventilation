@@ -423,6 +423,40 @@ subroutine OutVisc(x,z,visc)
 
 end subroutine OutVisc
 
+subroutine InitVisc
+
+    use param
+    use decomp_2d, only: xstart,xend
+    use vent_arrays, only: outvscx,outvscy,outvscz
+
+    implicit none
+
+    integer :: i,j,k
+    real    :: visc
+
+    outvscx(:,:) = 1.0d0
+    outvscy(:,:) = 1.0d0
+    outvscz(:,:) = 1.0d0
+
+    do k=1,nxm
+        do i=xstart(3),xend(3)
+            
+            call OutVisc(xc(k),zm(i),visc)
+            outvscx(k,i) = visc
+
+            call OutVisc(xm(k),zm(i),visc)
+            outvscy(k,i) = visc
+
+            call OutVisc(xm(k),zc(i),visc)
+            outvscz(k,i) = visc
+
+        end do
+    end do
+
+    return
+
+end subroutine InitVisc
+
 subroutine SetPressureBC
 
     ! This subroutine is required to ensure that the outlet B.C.s are not
