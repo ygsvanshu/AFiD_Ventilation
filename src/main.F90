@@ -336,8 +336,7 @@ program AFiD
             if(errorcode.eq.165) call QuitRoutine(tin,.false.,errorcode)
 
             !EP! velocities diverged
-            ! if(errorcode.eq.266) call QuitRoutine(tin,.false.,errorcode)
-            if(errorcode.eq.266) call QuitRoutine(tin,.true.,errorcode)
+            if(errorcode.eq.266) call QuitRoutine(tin,.false.,errorcode)
             
             !EP! mass not conserved
             if(errorcode.eq.169) call QuitRoutine(tin,.false.,errorcode)
