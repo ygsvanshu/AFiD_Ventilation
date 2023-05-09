@@ -316,7 +316,7 @@ program AFiD
             end if
         end if
 
-        if ( mod((ti(2)-tin(1)), tcontinua) .lt. (ti(2)-ti(1)) ) then
+        if (mod(time,tcontinua) < dt) then
             call WriteFlowField
             call WriteOutlet
             if (statcalc.and.(time.gt.tsta)) call WriteStatsEnd
