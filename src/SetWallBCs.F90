@@ -416,7 +416,7 @@ subroutine OutVisc(x,z,visc)
     else if (dist.gt.odst) then
         visc = 1
     else
-        visc = (2.0d0*ovsc*((dist/odst)**3)) - (3.0d0*ovsc*((dist/odst)**2)) + ovsc
+        visc = ((ovsc-1.0d0)*((2.0d0*((dist/odst)**3)) - (3.0d0*((dist/odst)**2)) + 1)) + 1
     end if
 
     return
