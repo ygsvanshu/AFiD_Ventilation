@@ -187,6 +187,7 @@ program AFiD
     end if
 
     if (savemovie) call InitMovie
+    call MpiBarrier
 
     call CheckDivergence(dmax)
     call GlobalQuantities
@@ -303,6 +304,10 @@ program AFiD
                 if (mod(time,tsnap).lt.dt) then
                     call WriteFlowFieldSnapshot
                     if(statcalc .and. (time.gt.tsta)) call WriteStatsSnap
+                    if (ismaster) then
+                        write(6,'(A)') '-----------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+-----------+------------+------------'
+                        write(6,'(A)') '## Saving flow snapshot ##'
+                    end if
                 endif
             endif
         endif
@@ -313,13 +318,22 @@ program AFiD
                 call Movie_ycut
                 call Movie_zcut
                 call Movie_outlet
+                if (ismaster) then
+                    write(6,'(A)') '-----------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+-----------+------------+------------'
+                    write(6,'(A)') '## Saving 2D slice ##'
+                end if
             end if
         end if
 
+        ! if ( mod((ti(2)-tin(1)), tcontinua) .lt. (ti(2)-ti(1)) ) then
         if (mod(time,tcontinua) < dt) then
             call WriteFlowField
             call WriteOutlet
             if (statcalc.and.(time.gt.tsta)) call WriteStatsEnd
+            if (ismaster) then
+                write(6,'(A)') '-----------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+-----------+------------+------------'
+                write(6,'(A)') '## Saving continua checkpoint ##'
+            end if
         end if
 
         if( (ti(2) - tin(1)) .gt. walltimemax) errorcode = 334

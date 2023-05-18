@@ -507,6 +507,9 @@ subroutine WriteStats(filename)
 	
 	! X-CUT
 
+	dsetname = trim('xcut/')
+	call HdfCreatePath(dsetname,filename,comm_xcut)
+
 	dsetname = trim('xcut/vx_m1')
 	call HdfWriteReal2D_X(dsetname,filename,vx_m1_xcut)
 	dsetname = trim('xcut/vy_m1')
@@ -562,6 +565,9 @@ subroutine WriteStats(filename)
 	! Y-CUT
 
 	if ((yc(xstart(2)).le.stats2Dy).and.(yc(xend(2)+lvlhalo).gt.stats2Dy)) then
+
+		dsetname = trim('ycut/')
+		call HdfCreatePath(dsetname,filename,comm_ycut)
 
 		dsetname = trim('ycut/vx_m1')
 		call HdfWriteReal2D_Y(dsetname,filename,vx_m1_ycut)
@@ -620,6 +626,9 @@ subroutine WriteStats(filename)
 	! Z-CUT
 
 	if ((zc(xstart(3)).le.stats2Dz).and.(zc(xend(3)+lvlhalo).gt.stats2Dz)) then
+
+		dsetname = trim('zcut/')
+		call HdfCreatePath(dsetname,filename,comm_zcut)
 
 		dsetname = trim('zcut/vx_m1')
 		call HdfWriteReal2D_Z(dsetname,filename,vx_m1_zcut)

@@ -69,25 +69,96 @@ subroutine InitMovie
         if ((zm(i).le.movie2Dz).and.(zm(i+1).gt.movie2Dz)) mov_ci = i
     end do
 
-    dsetname = trim("ibm_body")
-
     filename = trim('Results/movie_xcut.h5')
+
+    dsetname = trim("vx/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("vy/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("vz/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("pr/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("temp/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("co2/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    dsetname = trim("h2o/")
+    call HdfCreatePath(dsetname,filename,comm_xcut)
+    
     cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
     cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
+
+    dsetname = trim("ibm_body")
     call HdfWriteReal2D_X(dsetname,filename,(cmc*ibm_body(mov_ck,xstart(2):xend(2),xstart(3):xend(3)) + cpc*ibm_body(mov_ck+1,xstart(2):xend(2),xstart(3):xend(3))))
 
     if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
         filename = trim('Results/movie_ycut.h5')
+
+        dsetname = trim("vx/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("vy/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("vz/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("pr/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("temp/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("co2/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+        dsetname = trim("h2o/")
+        call HdfCreatePath(dsetname,filename,comm_ycut)
+
         cpc = (movie2Dy     - ym(mov_cj))/(ym(mov_cj+1) - ym(mov_cj))
         cmc = (ym(mov_cj+1) - movie2Dy)  /(ym(mov_cj+1) - ym(mov_cj))
+
+        dsetname = trim("ibm_body")
         call HdfWriteReal2D_Y(dsetname,filename,(cmc*ibm_body(1:nx,mov_cj,xstart(3):xend(3)) + cpc*ibm_body(1:nx,mov_cj+1,xstart(3):xend(3))))
     end if
 
     if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
         filename = trim('Results/movie_zcut.h5')
+
+        dsetname = trim("vx/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("vy/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("vz/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("pr/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("temp/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("co2/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("h2o/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+
         cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
         cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
+
+        dsetname = trim("ibm_body")
         call HdfWriteReal2D_Z(dsetname,filename,(cmc*ibm_body(1:nx,xstart(2):xend(2),mov_ci) + cpc*ibm_body(1:nx,xstart(2):xend(2),mov_ci+1)))
+    end if
+
+    if (xend(3).eq.nzm) then
+        filename = trim('Results/movie_outlet.h5')
+
+        dsetname = trim("vx/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("vy/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("vz/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("pr/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("temp/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("co2/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
+        dsetname = trim("h2o/")
+        call HdfCreatePath(dsetname,filename,comm_zcut)
     end if
 
 end subroutine InitMovie

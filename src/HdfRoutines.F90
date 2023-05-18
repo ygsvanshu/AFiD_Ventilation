@@ -112,9 +112,9 @@ subroutine HdfCreatePath(dsetname,filename,comm)
 
     call h5fclose_f(file_id,hdf_error)
 
-    call MPI_BARRIER(comm,ierror)
+    ! call MPI_BARRIER(comm,ierror)
 
-    write (6,*) 'Created path by ',nrank
+    ! write (6,*) 'Created path by ',nrank
 
 end subroutine HdfCreatePath
 
@@ -230,7 +230,6 @@ subroutine HdfWriteReal2D_X(dsetname,filename,var)
     implicit none
 
     character*50,intent(in)             :: dsetname,filename
-    character*50                        :: linkname,grupname,chckname
     real,intent(in)                     :: var(xstart(2):xend(2),xstart(3):xend(3))
     integer(HID_T)                      :: file_id,group_id,plist_id
     integer(HID_T)                      :: filespace
@@ -241,8 +240,7 @@ subroutine HdfWriteReal2D_X(dsetname,filename,var)
     integer(HSSIZE_T),dimension(2)      :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
-    integer                             :: slashpos
-    logical                             :: fexist,lexist,dexist
+    logical                             :: dexist
 
     !RO   Sort out MPI definitions
 
@@ -261,31 +259,8 @@ subroutine HdfWriteReal2D_X(dsetname,filename,var)
     
     call h5pcreate_f(H5P_FILE_ACCESS_F,plist_id,hdf_error)
     call h5pset_fapl_mpio_f(plist_id,comm,info,hdf_error)
-    inquire(file=filename,exist=fexist)
-    if (fexist) then
-        call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
-    else
-        call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error,access_prp=plist_id)
-    end if
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
     call h5pclose_f(plist_id,hdf_error)
-
-    slashpos = 1
-    linkname = dsetname
-    chckname = ''
-    do while (slashpos.gt.0)
-        slashpos = index(linkname,'/')
-        if (slashpos.ne.0) then
-            grupname = trim(linkname(:slashpos-1))
-            linkname = trim(linkname(slashpos+1:))
-            chckname = trim(trim(chckname)//'/'//trim(grupname))
-            call h5lexists_f(file_id,chckname,lexist,hdf_error)
-            if (.not.lexist) then
-                call h5gcreate_f(file_id,chckname,group_id,hdf_error)
-                call h5gclose_f(group_id,hdf_error)
-            end if
-        end if
-    end do
-
     call h5screate_simple_f(ndims,dims,filespace,hdf_error)
     call h5screate_simple_f(ndims,data_count,memspace,hdf_error)
     call h5lexists_f(file_id,dsetname,dexist,hdf_error)
@@ -316,7 +291,6 @@ subroutine HdfWriteReal2D_Y(dsetname,filename,var)
     implicit none
 
     character*50,intent(in)             :: dsetname,filename
-    character*50                        :: linkname,grupname,chckname
     real,intent(in)                     :: var(1:nx,xstart(3):xend(3))
     integer(HID_T)                      :: file_id,group_id,plist_id
     integer(HID_T)                      :: filespace
@@ -327,8 +301,7 @@ subroutine HdfWriteReal2D_Y(dsetname,filename,var)
     integer(HSSIZE_T),dimension(2)      :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
-    integer                             :: slashpos
-    logical                             :: fexist,lexist,dexist
+    logical                             :: dexist
 
     !RO   Sort out MPI definitions
 
@@ -347,31 +320,8 @@ subroutine HdfWriteReal2D_Y(dsetname,filename,var)
 
     call h5pcreate_f(H5P_FILE_ACCESS_F,plist_id,hdf_error)
     call h5pset_fapl_mpio_f(plist_id,comm,info,hdf_error)
-    inquire(file=filename,exist=fexist)
-    if (fexist) then
-        call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
-    else
-        call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error,access_prp=plist_id)
-    end if
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
     call h5pclose_f(plist_id,hdf_error)
-
-    slashpos = 1
-    linkname = dsetname
-    chckname = ''
-    do while (slashpos.gt.0)
-        slashpos = index(linkname,'/')
-        if (slashpos.ne.0) then
-            grupname = trim(linkname(:slashpos-1))
-            linkname = trim(linkname(slashpos+1:))
-            chckname = trim(trim(chckname)//'/'//trim(grupname))
-            call h5lexists_f(file_id,chckname,lexist,hdf_error)
-            if (.not.lexist) then
-                call h5gcreate_f(file_id,chckname,group_id,hdf_error)
-                call h5gclose_f(group_id,hdf_error)
-            end if
-        end if
-    end do
-    
     call h5screate_simple_f(ndims,dims,filespace,hdf_error)
     call h5screate_simple_f(ndims,data_count,memspace,hdf_error) 
     call h5lexists_f(file_id,dsetname,dexist,hdf_error)
@@ -402,7 +352,6 @@ subroutine HdfWriteReal2D_Z(dsetname,filename,var)
     implicit none
 
     character*50,intent(in)             :: dsetname,filename
-    character*50                        :: grupname,linkname,chckname
     real,intent(in)                     :: var(1:nx,xstart(2):xend(2))
     integer(HID_T)                      :: file_id,group_id,plist_id
     integer(HID_T)                      :: filespace
@@ -413,8 +362,7 @@ subroutine HdfWriteReal2D_Z(dsetname,filename,var)
     integer(HSSIZE_T),dimension(2)      :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
-    integer                             :: slashpos
-    logical                             :: fexist,lexist,dexist
+    logical                             :: dexist
 
     !RO   Sort out MPI definitions
 
@@ -433,32 +381,8 @@ subroutine HdfWriteReal2D_Z(dsetname,filename,var)
 
     call h5pcreate_f(H5P_FILE_ACCESS_F,plist_id,hdf_error)
     call h5pset_fapl_mpio_f(plist_id,comm,info,hdf_error)
-
-    inquire(file=filename,exist=fexist)
-    if (fexist) then
-        call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
-    else
-        call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error,access_prp=plist_id)
-    end if
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
     call h5pclose_f(plist_id,hdf_error)
-
-    slashpos = 1
-    linkname = dsetname
-    chckname = ''
-    do while (slashpos.gt.0)
-        slashpos = index(linkname,'/')
-        if (slashpos.ne.0) then
-            grupname = trim(linkname(:slashpos-1))
-            linkname = trim(linkname(slashpos+1:))
-            chckname = trim(trim(chckname)//'/'//trim(grupname))
-            call h5lexists_f(file_id,chckname,lexist,hdf_error)
-            if (.not.lexist) then
-                call h5gcreate_f(file_id,chckname,group_id,hdf_error)
-                call h5gclose_f(group_id,hdf_error)
-            end if
-        end if
-    end do
-    
     call h5screate_simple_f(ndims,dims,filespace,hdf_error)
     call h5screate_simple_f(ndims,data_count,memspace,hdf_error)
     call h5lexists_f(file_id,dsetname,dexist,hdf_error)
