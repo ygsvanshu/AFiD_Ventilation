@@ -146,6 +146,7 @@ module movie_indices
     integer                             :: mov_yi,mov_yj,mov_yk
     integer                             :: mov_zi,mov_zj,mov_zk
     integer                             :: mov_ci,mov_cj,mov_ck
+    real,allocatable,dimension(:,:)     :: mov_xcut,mov_ycut,mov_zcut,mov_ocut
 end module movie_indices
 
 module vent_arrays

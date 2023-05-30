@@ -14,6 +14,7 @@ subroutine DeallocateVariables
     use local_arrays
     use stat_arrays
     use vent_arrays
+    use movie_indices
     use AuxiliaryRoutines
 
     implicit none
@@ -75,6 +76,11 @@ subroutine DeallocateVariables
     call DestroyReal2DArray(outvscx)
     call DestroyReal2DArray(outvscy)
     call DestroyReal2DArray(outvscz)
+
+    call DestroyReal2DArray(mov_xcut)
+    call DestroyReal2DArray(mov_ycut)
+    call DestroyReal2DArray(mov_zcut)
+    call DestroyReal2DArray(mov_ocut)
 
     if (statcalc) then
         ! X-CUT
