@@ -48,7 +48,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 502 Enable therm driving & Rayleigh number   RAY                '1.38d10'
 503 Expansion coefficient ratio for CO2      LAMBDA_CO2         '-1.21'
     (CO2 is denser than air)
-    (This quantity should be positive)
+    (This quantity should be negative)
 504 Expansion coefficient ratio for H20 vap. LAMBDA_H20         '0.88'
     (H2O vapour is lighter than air)
     (This quantity should be positive)
