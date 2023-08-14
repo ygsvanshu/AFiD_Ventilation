@@ -237,7 +237,7 @@ subroutine HdfWriteReal2D_X(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
@@ -298,7 +298,7 @@ subroutine HdfWriteReal2D_Y(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
@@ -359,7 +359,7 @@ subroutine HdfWriteReal2D_Z(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
