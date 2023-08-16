@@ -12,7 +12,7 @@ subroutine ReadOutlet
 
     use mpih
     use decomp_2d
-    use local_arrays, only: vx,vy,vz,temp,co2,h2o
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
     use param
 
     implicit none
@@ -40,6 +40,11 @@ subroutine ReadOutlet
             dsetname = trim('vz')
             call HdfReadReal2D_Z(filename,dsetname,readwrite_outlet,xstart(2),xend(2),nx,ny)
             vz(1:nx,xstart(2):xend(2),nz) = readwrite_outlet(1:nx,xstart(2):xend(2))
+
+            dsetname = trim('pr')
+            call HdfReadReal2D_Z(filename,dsetname,readwrite_outlet,xstart(2),xend(2),nx,ny)
+            pr(1:nx,xstart(2):xend(2),nz) = &
+            2.0d0*readwrite_outlet(1:nx,xstart(2):xend(2)) - pr(1:nx,xstart(2):xend(2),nzm)
 
             dsetname = trim('temp')
             call HdfReadReal2D_Z(filename,dsetname,readwrite_outlet,xstart(2),xend(2),nx,ny)

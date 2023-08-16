@@ -12,44 +12,74 @@ subroutine WriteOutlet
 	
     use param
     use decomp_2d, only: xstart,xend,nrank
-    use local_arrays, only: vz,vy,vx,temp,co2,h2o
-    use movie_indices, only: mov_zcut
+    use local_arrays, only: vz,vy,vx,temp,pr,co2,h2o
+    use movie_indices, only: mov_ocut
  	
     implicit none
 	
+    integer         :: k,j,i
 	character*50    :: filename,dsetname
 
     if (xend(3).eq.nzm) then
 
         filename = trim('continua_outlet.h5')
-        dsetname = trim('')
-        
-        call HdfCreatePath(dsetname,filename,comm_zcut)
     
-        dsetname = trim("vx")
-        mov_zcut(1:nx,xstart(2):xend(2)) = 0.5d0*(vx(1:nx,xstart(2):xend(2),nzm) + vx(1:nx,xstart(2):xend(2),nz))
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+        dsetname = trim("/vx")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(vx(k,j,nzm) + vx(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("vy")
-        mov_zcut(1:nx,xstart(2):xend(2)) = 0.5d0*(vy(1:nx,xstart(2):xend(2),nzm) + vy(1:nx,xstart(2):xend(2),nz))
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+        dsetname = trim("/vy")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(vy(k,j,nzm) + vy(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
     
-        dsetname = trim("vz")
-        mov_zcut(1:nx,xstart(2):xend(2)) = vz(1:nx,xstart(2):xend(2),nz)
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+        dsetname = trim("/vz")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = vz(k,j,nz)
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("temp")
-        mov_zcut(1:nx,xstart(2):xend(2)) = 0.5d0*(temp(1:nx,xstart(2):xend(2),nzm) + temp(1:nx,xstart(2):xend(2),nz))
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+        dsetname = trim("/pr")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(pr(k,j,nzm) + pr(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("co2")
-        mov_zcut(1:nx,xstart(2):xend(2)) = 0.5d0*(co2(1:nx,xstart(2):xend(2),nzm) + co2(1:nx,xstart(2):xend(2),nz))
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+        dsetname = trim("/temp")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(temp(k,j,nzm) + temp(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("h2o")
-        mov_zcut(1:nx,xstart(2):xend(2)) = 0.5d0*(h2o(1:nx,xstart(2):xend(2),nzm) + h2o(1:nx,xstart(2):xend(2),nz))
-        call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
-    
+        dsetname = trim("/co2")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(co2(k,j,nzm) + co2(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
+
+        dsetname = trim("/h2o")
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_ocut(k,j) = 0.5d0*(h2o(k,j,nzm) + h2o(k,j,nz))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
+
     end if
     
     return

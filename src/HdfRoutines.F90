@@ -36,6 +36,77 @@ subroutine HdfCreateBlankFile(filename)
 
 end subroutine HdfCreateBlankFile
 
+subroutine HdfParallelCreateBlankFile(filename,comm)
+
+    use mpih
+    use hdf5
+
+    implicit none
+
+    character*50,intent(in) :: filename
+    integer,intent(in)      :: comm
+    integer(HID_T)          :: file_id,plist_id
+    integer                 :: info,hdf_error
+
+    info = MPI_INFO_NULL
+    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, hdf_error)
+    call h5pset_fapl_mpio_f(plist_id, comm, info, hdf_error)
+    call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error,access_prp=plist_id)
+    call h5pclose_f(plist_id,hdf_error)
+    call h5fclose_f(file_id,hdf_error)
+
+end subroutine HdfParallelCreateBlankFile
+
+subroutine HdfCreateGroup(linkname,filename)
+
+    use hdf5
+
+    implicit none
+
+    character*50,intent(in) :: filename,linkname
+    integer(HID_T)          :: file_id,group_id
+    integer                 :: hdf_error
+    integer                 :: info
+    logical                 :: lexist
+
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error)
+    call h5lexists_f(file_id,linkname,lexist,hdf_error)
+    if (.not.lexist) then
+        call h5gcreate_f(file_id,linkname,group_id,hdf_error)
+        call h5gclose_f(group_id,hdf_error)
+    end if
+    call h5fclose_f(file_id,hdf_error)
+
+end subroutine HdfCreateGroup
+
+subroutine HdfParallelCreateGroup(linkname,filename,comm)
+
+    use mpih
+    use hdf5
+
+    implicit none
+
+    character*50, intent(in)        :: filename,linkname
+    integer, intent(in), optional   :: comm
+    integer(HID_T)                  :: file_id,group_id,plist_id
+    integer                         :: hdf_error
+    integer                         :: info
+    logical                         :: lexist
+
+    info = MPI_INFO_NULL
+    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, hdf_error)
+    call h5pset_fapl_mpio_f(plist_id, comm, info, hdf_error)
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
+    call h5pclose_f(plist_id,hdf_error)
+    call h5lexists_f(file_id,linkname,lexist,hdf_error)
+    if (.not.lexist) then
+        call h5gcreate_f(file_id,linkname,group_id,hdf_error)
+        call h5gclose_f(group_id,hdf_error)
+    end if
+    call h5fclose_f(file_id,hdf_error)
+
+end subroutine HdfParallelCreateGroup
+
 ! If MPI communicator comm is given, it is assumed that file is opened for the appropriate communicator
 ! If MPI communicator comm is not given, it is assumed that the subroutine is called only on root node 
 subroutine HdfCreatePath(dsetname,filename,comm)
@@ -237,7 +308,7 @@ subroutine HdfWriteReal2D_X(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
@@ -298,7 +369,7 @@ subroutine HdfWriteReal2D_Y(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
@@ -359,7 +430,7 @@ subroutine HdfWriteReal2D_Z(dsetname,filename,var)
     integer(HID_T)                      :: dset
     integer(HSIZE_T)                    :: dims(2)
     integer(HSIZE_T),dimension(2)       :: data_count  
-    integer(HSSIZE_T),dimension(2)      :: data_offset 
+    integer(HSIZE_T),dimension(2)       :: data_offset 
     integer                             :: hdf_error,ndims
     integer                             :: comm,info
     logical                             :: dexist
