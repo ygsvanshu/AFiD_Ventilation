@@ -74,7 +74,7 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 604 Enable 2D X, Y, Z, inlet, and outlet     MX MY MZ MI MO TF  'n' 'y' 'y' 'n' 'y' '1.0'
     slices for movie (n/y) and frame
 605 Location of 2D planes for movie          MOVX MOVY MOVZ     '0.3' '0.5' '0.5'
-606 Wall clock interval for continua save    TCONTINUA          '10'
+606 Flow time interval for continua save     TCONTINUA          '10'
 
 ====> Other -------------------------------------------------------------------
 AT Vanshu: For Consistency I changed nomenclature a bit, but only in this file ;)
