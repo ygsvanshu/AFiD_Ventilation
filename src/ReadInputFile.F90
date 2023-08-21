@@ -377,7 +377,7 @@ SUBROUTINE read_from_bouin
                 call stop_config
             endif
 
-            read(ss(2),*) tframe
+            read(ss(6),*) tframe
 
         ELSEIF(line(1:3)=='605') THEN 
             ! ###### 2D MOVIE SLICES ######
