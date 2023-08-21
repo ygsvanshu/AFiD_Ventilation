@@ -24,6 +24,8 @@ subroutine WriteOutlet
 
         filename = trim('continua_outlet.h5')
     
+        call HdfParallelCreateBlankFile(filename,comm_zcut)
+
         dsetname = trim("/vx")
         do k=1,nx
             do j=xstart(2),xend(2)

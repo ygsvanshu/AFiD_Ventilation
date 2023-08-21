@@ -89,6 +89,7 @@ subroutine InitVariables
     call AllocateReal2dArray(mov_xcut,xstart(2),xend(2),xstart(3),xend(3))
     call AllocateReal2dArray(mov_ycut,1,nx,xstart(3),xend(3))
     call AllocateReal2dArray(mov_zcut,1,nx,xstart(2),xend(2))
+    call AllocateReal2dArray(mov_icut,1,nx,xstart(2),xend(2))
     call AllocateReal2dArray(mov_ocut,1,nx,xstart(2),xend(2))
 
     !-------------------------------------------------
