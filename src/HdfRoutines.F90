@@ -33,7 +33,7 @@ subroutine HdfCreateBlankFile(filename)
     logical                 :: fexist
 
     inquire(file=filename,exist=fexist)
-    if (fexist) then
+    if (.not.fexist) then
         call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error)
         call h5fclose_f(file_id,hdf_error)
     end if
@@ -54,7 +54,7 @@ subroutine HdfParallelCreateBlankFile(filename,comm)
     logical                 :: fexist
 
     inquire(file=filename,exist=fexist)
-    if (fexist) then
+    if (.not.fexist) then
         info = MPI_INFO_NULL
         call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, hdf_error)
         call h5pset_fapl_mpio_f(plist_id, comm, info, hdf_error)
