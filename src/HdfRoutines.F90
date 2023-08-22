@@ -28,9 +28,9 @@ subroutine HdfCreateBlankFile(filename)
     implicit none
 
     character*50,intent(in) :: filename
-    integer(HID_T) :: file_id
-    integer :: hdf_error
-    logical                 :: lexist
+    integer(HID_T)          :: file_id
+    integer                 :: hdf_error
+    logical                 :: fexist
 
     inquire(file=filename,exist=fexist)
     if (fexist) then
@@ -51,7 +51,7 @@ subroutine HdfParallelCreateBlankFile(filename,comm)
     integer,intent(in)      :: comm
     integer(HID_T)          :: file_id,plist_id
     integer                 :: info,hdf_error
-    logical                 :: lexist
+    logical                 :: fexist
 
     inquire(file=filename,exist=fexist)
     if (fexist) then
