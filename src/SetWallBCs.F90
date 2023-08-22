@@ -134,13 +134,13 @@ subroutine SetWallBCs
         vy(:,:,0) = -vy(:,:,1)                  ! Dirchlet condition
         do k=1,nx                           
             if ((k.lt.ixcst).or.(k.gt.ixcen)) then
-                temp(:,:,0) = temp(:,:,1)       ! Adiabatic
-                co2(:,:,0) = co2(:,:,1)         ! Zero flux
-                h2o(:,:,0) = h2o(:,:,1)         ! Zero flux
+                temp(k,:,0) = temp(k,:,1)       ! Adiabatic
+                co2(k,:,0) = co2(k,:,1)         ! Zero flux
+                h2o(k,:,0) = h2o(k,:,1)         ! Zero flux
             else
-                temp(:,:,0) = -temp(:,:,1)      ! Dirchlet condition
-                co2(:,:,0) = -co2(:,:,1)        ! Dirchlet condition
-                h2o(:,:,0) = -h2o(:,:,1)        ! Dirchlet condition
+                temp(k,:,0) = -temp(k,:,1)      ! Dirchlet condition
+                co2(k,:,0) = -co2(k,:,1)        ! Dirchlet condition
+                h2o(k,:,0) = -h2o(k,:,1)        ! Dirchlet condition
 	    end if
         end do
         do k=1,nxm                              
