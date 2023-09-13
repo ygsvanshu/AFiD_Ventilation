@@ -138,7 +138,7 @@ subroutine AddBreathIBM
     implicit none
 
     integer :: kc,jc,ic
-    real    :: time_shift,breath_interval,time_signal,vel_peak,time_signal_exp,space_signal  
+    real    :: time_signal,space_signal  
     real    :: tprefactor,sprefactor,qprefactor
     real    :: injectedvol,injectmeanvx,injectmeanvy,injectmeanvz,injectmeantemp,injectmeanco2,injectmeanh2o
 
@@ -149,22 +149,23 @@ subroutine AddBreathIBM
     end if
 
     ! Compute injection quantities
-    injectedvol     = 5e-4  /3.0/3.0/3.0       ! normalized 0.5L (by length scale 3m)
-    injectmeanvx    = -0.5*dsin(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    ! injectedvol     = 5e-4  /3.0/3.0/3.0       ! normalized 0.5L (by length scale 3m)
+    injectedvol     = breath_volume
+    ! injectmeanvx    = -0.5*dsin(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    injectmeanvx    = breath_velocity*dsin(breath_angle*pi/180.0d0)
     injectmeanvy    = 0.0
-    injectmeanvz    = -0.5*dcos(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    ! injectmeanvz    = -0.5*dcos(pi/3.0)/0.71   ! normalized 0.5m/s with angle (by free fall vel 0.71m/s)
+    injectmeanvz    = breath_velocity*dcos(breath_angle*pi/180.0d0)
     injectmeantemp  = 1.0
     injectmeanco2   = 1.0
     injectmeanh2o   = 1.0
 
     ! Set temporal Gaussian func
-    time_shift      = 2.0/4.25             ! normalized 2s (by free fall time 4.25s)
-    breath_interval = 4.25/4.25            ! normalized 4.25s (by free fall time 4.25s)
+    ! breath_offset   = 2.0/4.25             ! normalized 2s (by free fall time 4.25s)
+    ! breath_interval = 4.25/4.25            ! normalized 4.25s (by free fall time 4.25s)
 
-    time_signal_exp = exp(-0.5*( 2.0*(modulo(time,breath_interval)-time_shift)/kernel_width_time)**2)
-    if(time_signal_exp.le.1d-8) time_signal_exp=0.d0
     tprefactor      = (2.0/(2.0*pi)**0.5)/kernel_width_time
-    time_signal     = tprefactor*time_signal_exp
+    time_signal     = tprefactor*exp(-0.5*( 2.0*(modulo(time,breath_interval)-breath_offset)/kernel_width_time)**2)
     sprefactor      = (2.0/(2.0*pi)**0.5)**3.0/kernel_width_space/kernel_width_space/kernel_width_space
 
     ! Set breath

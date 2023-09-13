@@ -4,9 +4,9 @@
 #--------------------------------------------------------------
 # Basic Fortran compiler arguments 
 #--------------------------------------------------------------
-FC = h5pfc -fpp
-FC += -r8 -Ofast
-# FC += -r8 -O0 -g -traceback -check bounds
+FC = h5pfc -cpp -ffree-line-length-none -fdefault-real-8 -fdefault-double-8 -fallow-argument-mismatch
+FC += -Ofast
+# FC += -O0 -g -fbacktrace -Warray-bounds
 
 #--------------------------------------------------------------
 # Advanced Fortran compiler options 
@@ -35,17 +35,25 @@ FC += -r8 -Ofast
 #FFTW3_LIB = -L/apps/FFTW/3.3.6/INTEL/IMPI/lib
 #BLAS_LIB = -L/apps/INTEL/2018.4.057/mkl/lib/intel64
 
+# DISCOVERER
+# FFTW3_LIB = -L/opt/software/fftw/3/3.3.10-gcc-openmpi/lib/
+# BLAS_LIB = -L/opt/software/lapack/3/3.11.0-gcc/lib64/
+
+# Local
+FFTW3_LIB = -L/usr/local/lib/
+
 # Common build flags
-FFTW3_FLAGS = -lfftw3 
-BLAS_FLAGS = -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread 
+FFTW3_FLAGS = -lfftw3
+BLAS_FLAGS = -llapack
+# BLAS_FLAGS = -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread 
 # HDF5_FLAGS = -lhdf5_fortran -lhdf5  -lsz -lz -ldl -lm
 HDF5_FLAGS = -lhdf5_fortran -lhdf5 -lz -ldl -lm
 
-#LDFLAGS = $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
-LDFLAGS = -I$(MPI_BASE)/include $(FFTW_MPI_SHLIB) $(BLAS_FLAGS) $(HDF5_FLAGS) #-qmkl=sequential
+# LDFLAGS = $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
+# LDFLAGS = -I$(MPI_BASE)/Include $(FFTW_MPI_SHLIB) $(BLAS_FLAGS) $(HDF5_FLAGS) #-qmkl=sequential
 #LDFLAGS = -L$(LD_LIBRARY_PATH) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
 #LDFLAGS = -L$(LD_LIBRARY_PATH) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS) -mkl=parallel
-#LDFLAGS = $(FFTW3_LIB) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
+LDFLAGS = $(FFTW3_LIB) $(FFTW3_FLAGS) $(BLAS_FLAGS) $(HDF5_FLAGS)
 #LDFLAGS = $(FFTW3_LIB) $(FFTW3_FLAGS) $(BLAS_LIB) $(BLAS_FLAGS) $(HDF5_FLAGS)
 #LDFLAGS = $(FFTW_SHLIB) $(MKL_SHLIB) $(HDF5_F90_SHLIB) $(HDF5_SHLIB) -lz #$(SZIP_LIB) -lz
 #LDFLAGS = -lfftw3 -lmkl_core -lmkl_intel_lp64 -mkl=parallel
@@ -92,7 +100,7 @@ OBJDIR=obj
 OBJS  := $(FFILES:%.F90=$(OBJDIR)/%.o)
 MOBJS := $(MFILES:%.F90=$(OBJDIR)/%.o)
 
-FC += -module $(OBJDIR) 
+FC += -J $(OBJDIR) 
 
 #-------------------------------------------------------------------------------
 # Make program 
@@ -114,6 +122,8 @@ $(OBJDIR)/AuxiliaryRoutines.o: $(SRCDIR)/AuxiliaryRoutines.F90
 $(OBJDIR)/decomp_2d.o: $(SRCDIR)/decomp_2d.F90
 	$(FC) -c -o $@ $< $(LDFLAGS)
 $(OBJDIR)/decomp_2d_fft.o: $(SRCDIR)/decomp_2d_fft.F90
+	$(FC) -c -o $@ $< $(LDFLAGS) 
+$(OBJDIR)/ImplicitDecomp.o: $(SRCDIR)/ImplicitDecomp.F90
 	$(FC) -c -o $@ $< $(LDFLAGS) 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.F90 $(MOBJS)

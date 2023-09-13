@@ -35,7 +35,7 @@ module param
     real            :: personx,persony,personz,sclf
     real            :: breathx,breathy,breathz
     real            :: kernel_width_space,kernel_width_time
-    integer         :: inslws,inslwn
+    real            :: breath_interval,breath_offset,breath_volume,breath_velocity,breath_angle
 
     logical         :: statcalc=.false.
     real            :: tsta

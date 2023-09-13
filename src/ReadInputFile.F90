@@ -274,10 +274,21 @@ SUBROUTINE read_from_bouin
             read(ss(2),*) kernel_width_time
 
         ELSEIF(line(1:3)=='514') THEN 
-        ! ###### BOUNDARY CONDITIONS ######  
+        ! ###### BREATH INTERVAL AND OFFSET ######  
             call scan_string (line, 2, ss, narg)
-            read(ss(1),*) inslws
-            read(ss(2),*) inslwn
+            read(ss(1),*) breath_interval
+            read(ss(2),*) breath_offset
+
+        ELSEIF(line(1:3)=='515') THEN 
+        ! ###### BREATH VELOCITY AND ANGLE ######  
+            call scan_string (line, 2, ss, narg)
+            read(ss(1),*) breath_velocity
+            read(ss(2),*) breath_angle
+
+        ELSEIF(line(1:3)=='516') THEN 
+        ! ###### BREATH VOLUME ######  
+            call scan_string (line, 1, ss, narg)
+            read(ss(1),*) breath_volume
 
         ELSEIF(line(1:3)=='601') THEN 
         ! ###### STATISTICS ######  
