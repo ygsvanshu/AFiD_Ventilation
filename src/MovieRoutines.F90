@@ -153,7 +153,7 @@ subroutine InitMovie
 
         cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
         cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
-
+        
         dsetname = trim("/ibm_body")
         do k=1,nx
             do j=xstart(2),xend(2)
@@ -565,7 +565,7 @@ subroutine Movie_outlet
 
         filename = trim('Results/movie_outlet.h5')
         write (frame,"(i5.5)") nint(time/tframe)
-    
+
         dsetname = trim("/vx")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
@@ -581,7 +581,7 @@ subroutine Movie_outlet
             end do
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
-    
+
         dsetname = trim("/vz")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
