@@ -314,10 +314,11 @@ program AFiD
 
         if (savemovie) then
             if (mod(time,tframe) < dt) then
-                call Movie_xcut
-                call Movie_ycut
-                call Movie_zcut
-                call Movie_outlet
+                if (savemovie_x) call Movie_xcut
+                if (savemovie_y) call Movie_ycut
+                if (savemovie_z) call Movie_zcut
+                if (savemovie_i) call Movie_inlet
+                if (savemovie_o) call Movie_outlet
                 if (ismaster) then
                     write(6,'(A)') '-----------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+------------+-----------+------------+------------'
                     write(6,'(A)') '## Saving 2D slice ##'

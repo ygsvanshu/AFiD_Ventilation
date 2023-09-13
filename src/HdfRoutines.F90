@@ -28,13 +28,92 @@ subroutine HdfCreateBlankFile(filename)
     implicit none
 
     character*50,intent(in) :: filename
-    integer(HID_T) :: file_id
-    integer :: hdf_error
+    integer(HID_T)          :: file_id
+    integer                 :: hdf_error
+    logical                 :: fexist
 
-    call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error)
-    call h5fclose_f(file_id,hdf_error)
+    inquire(file=filename,exist=fexist)
+    if (.not.fexist) then
+        call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error)
+        call h5fclose_f(file_id,hdf_error)
+    end if
 
 end subroutine HdfCreateBlankFile
+
+subroutine HdfParallelCreateBlankFile(filename,comm)
+
+    use mpih
+    use hdf5
+
+    implicit none
+
+    character*50,intent(in) :: filename
+    integer,intent(in)      :: comm
+    integer(HID_T)          :: file_id,plist_id
+    integer                 :: info,hdf_error
+    logical                 :: fexist
+
+    inquire(file=filename,exist=fexist)
+    if (.not.fexist) then
+        info = MPI_INFO_NULL
+        call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, hdf_error)
+        call h5pset_fapl_mpio_f(plist_id, comm, info, hdf_error)
+        call h5fcreate_f(filename,H5F_ACC_TRUNC_F,file_id,hdf_error,access_prp=plist_id)
+        call h5pclose_f(plist_id,hdf_error)
+        call h5fclose_f(file_id,hdf_error)
+    end if
+
+end subroutine HdfParallelCreateBlankFile
+
+subroutine HdfCreateGroup(linkname,filename)
+
+    use hdf5
+
+    implicit none
+
+    character*50,intent(in) :: filename,linkname
+    integer(HID_T)          :: file_id,group_id
+    integer                 :: hdf_error
+    integer                 :: info
+    logical                 :: lexist
+
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error)
+    call h5lexists_f(file_id,linkname,lexist,hdf_error)
+    if (.not.lexist) then
+        call h5gcreate_f(file_id,linkname,group_id,hdf_error)
+        call h5gclose_f(group_id,hdf_error)
+    end if
+    call h5fclose_f(file_id,hdf_error)
+
+end subroutine HdfCreateGroup
+
+subroutine HdfParallelCreateGroup(linkname,filename,comm)
+
+    use mpih
+    use hdf5
+
+    implicit none
+
+    character*50, intent(in)        :: filename,linkname
+    integer, intent(in), optional   :: comm
+    integer(HID_T)                  :: file_id,group_id,plist_id
+    integer                         :: hdf_error
+    integer                         :: info
+    logical                         :: lexist
+
+    info = MPI_INFO_NULL
+    call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, hdf_error)
+    call h5pset_fapl_mpio_f(plist_id, comm, info, hdf_error)
+    call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,hdf_error,access_prp=plist_id)
+    call h5pclose_f(plist_id,hdf_error)
+    call h5lexists_f(file_id,linkname,lexist,hdf_error)
+    if (.not.lexist) then
+        call h5gcreate_f(file_id,linkname,group_id,hdf_error)
+        call h5gclose_f(group_id,hdf_error)
+    end if
+    call h5fclose_f(file_id,hdf_error)
+
+end subroutine HdfParallelCreateGroup
 
 ! If MPI communicator comm is given, it is assumed that file is opened for the appropriate communicator
 ! If MPI communicator comm is not given, it is assumed that the subroutine is called only on root node 

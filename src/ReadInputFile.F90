@@ -34,6 +34,7 @@ subroutine ReadInputFile
     pi  = 2.d0*dasin(1.d0)
 
     if ((statread).and.(.not. readflow)) write(6,*) 'Warning: Restarting flowfield with statistics read'
+    savemovie = (savemovie_x.or.savemovie_y.or.savemovie_z.or.savemovie_i.or.savemovie_o)
 
     return 
 
@@ -319,18 +320,64 @@ SUBROUTINE read_from_bouin
 
         ELSEIF(line(1:3)=='604') THEN 
         ! ###### MOVIE OUTPUT ######  
-            call scan_string (line, 2, ss, narg)
+            call scan_string (line, 6, ss, narg)
+
             stringdummy1=ss(1)
             if('y'==stringdummy1) then
-                savemovie=.true.
+                savemovie_x=.true.
             elseif('n'==stringdummy1) then
-                savemovie=.false.
+                savemovie_x=.false.
             else
-                Write(*,*)"ERROR: Input value of parameter MOVIEON not valid"
+                Write(*,*)"ERROR: Input value of parameter MX not valid"
                 Write(*,*)"       ===> valid values 'n' or 'y'             "
                 call stop_config
             endif
-            read(ss(2),*) tframe
+
+            stringdummy1=ss(2)
+            if('y'==stringdummy1) then
+                savemovie_y=.true.
+            elseif('n'==stringdummy1) then
+                savemovie_y=.false.
+            else
+                Write(*,*)"ERROR: Input value of parameter MY not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
+
+            stringdummy1=ss(3)
+            if('y'==stringdummy1) then
+                savemovie_z=.true.
+            elseif('n'==stringdummy1) then
+                savemovie_z=.false.
+            else
+                Write(*,*)"ERROR: Input value of parameter MZ not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
+
+            stringdummy1=ss(4)
+            if('y'==stringdummy1) then
+                savemovie_i=.true.
+            elseif('n'==stringdummy1) then
+                savemovie_i=.false.
+            else
+                Write(*,*)"ERROR: Input value of parameter MI not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
+
+            stringdummy1=ss(5)
+            if('y'==stringdummy1) then
+                savemovie_o=.true.
+            elseif('n'==stringdummy1) then
+                savemovie_o=.false.
+            else
+                Write(*,*)"ERROR: Input value of parameter MO not valid"
+                Write(*,*)"       ===> valid values 'n' or 'y'             "
+                call stop_config
+            endif
+
+            read(ss(6),*) tframe
 
         ELSEIF(line(1:3)=='605') THEN 
             ! ###### 2D MOVIE SLICES ######

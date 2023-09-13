@@ -132,9 +132,17 @@ subroutine SetWallBCs
     if (xstart(3).eq.1) then
         vx(:,:,0) = -vx(:,:,1)                  ! Dirchlet condition
         vy(:,:,0) = -vy(:,:,1)                  ! Dirchlet condition
-        temp(:,:,0) = temp(:,:,1)               ! Adiabatic
-        co2(:,:,0) = co2(:,:,1)                 ! Zero flux
-        h2o(:,:,0) = h2o(:,:,1)                 ! Zero flux
+        do k=1,nx                           
+            if ((k.lt.ixfst).or.(k.gt.ixfen+1)) then
+                temp(k,:,0) = temp(k,:,1)       ! Adiabatic
+                co2(k,:,0) = co2(k,:,1)         ! Zero flux
+                h2o(k,:,0) = h2o(k,:,1)         ! Zero flux
+            else
+                temp(k,:,0) = -temp(k,:,1)      ! Dirchlet condition
+                co2(k,:,0) = -co2(k,:,1)        ! Dirchlet condition
+                h2o(k,:,0) = -h2o(k,:,1)        ! Dirchlet condition
+	    end if
+        end do
         do k=1,nxm                              
             if ((k.lt.ixfst).or.(k.gt.ixfen)) then
                 vz(k,:,1) = 0.0d0               ! Dirchlet condition
@@ -247,15 +255,11 @@ subroutine SetOutletBC
     !
     ! We tried this boundary condition and many more including imposing a fixed velocity
     ! at the outlet. This always caused a numerical instability in the form waves entering the domain.
-    ! We found through trial and error that this is an instability related to the diffusive terms
-    ! since the diffusive terms in Z and Y direction are handled explicitly as compared to the slab code
-    ! where they are handled implicitly. Through trial and error, we found that imposing the double derivative
-    ! normal to the outflow as zero solves this issue (i.e. d^2(q)/dz^2 = 0). In a way, the solution at outflow 
-    ! is linearly interpolated from the interior. 
-    !
-    ! We still do not fully understand why it solves the issue though. However, the outflow is always going 
-    ! to be aphysical in nature and we do not care too much about the physical accuracy of the solution 
-    ! close to the outlet for the expected application of this code.
+    ! We found through trial and error that this is a diffusive instability related to the poor resolution normal to the outlet 
+    ! We were suggested by Roberto to increasing viscosity locally to avoid this issue. Although this is hacky, 
+    ! we believe that this does not affect the core quantities like CO2 concentrations that we plan to study. 
+    ! The outflow is always going to be aphysical in nature and we do not care too much about 
+    ! the physical accuracy of the solution close to the outlet for the expected application of this code.
     ! 
     ! - Vanshu and Chris
 

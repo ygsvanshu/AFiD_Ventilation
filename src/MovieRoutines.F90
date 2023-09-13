@@ -23,7 +23,7 @@ subroutine InitMovie
 
     integer         :: i,j,k
     real            :: cpc,cmc
-    character*50    :: dsetname,filename,frame
+    character*50    :: dsetname,linkname,filename,frame
 
     ! For the X grid
     do k=1,nx-1
@@ -70,26 +70,27 @@ subroutine InitMovie
     end do
 
     filename = trim('Results/movie_xcut.h5')
+    call HdfParallelCreateBlankFile(filename,comm_xcut)
 
-    dsetname = trim("vx/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("vy/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("vz/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("pr/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("temp/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("co2/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
-    dsetname = trim("h2o/")
-    call HdfCreatePath(dsetname,filename,comm_xcut)
+    linkname = trim("/vx")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/vy")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/vz")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/pr")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/temp")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/co2")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
+    linkname = trim("/h2o")
+    call HdfParallelCreateGroup(linkname,filename,comm_xcut)
     
     cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
     cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
 
-    dsetname = trim("ibm_body")
+    dsetname = trim("/ibm_body")
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmc*ibm_body(mov_ck,j,i) + cpc*ibm_body(mov_ck+1,j,i)
@@ -98,82 +99,113 @@ subroutine InitMovie
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
     if ((yc(xstart(2)).le.movie2Dy).and.(yc(xend(2)+lvlhalo).gt.movie2Dy)) then
-        filename = trim('Results/movie_ycut.h5')
 
-        dsetname = trim("vx/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("vy/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("vz/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("pr/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("temp/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("co2/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
-        dsetname = trim("h2o/")
-        call HdfCreatePath(dsetname,filename,comm_ycut)
+        filename = trim('Results/movie_ycut.h5')
+        call HdfParallelCreateBlankFile(filename,comm_ycut)
+        
+        linkname = trim("/vx")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/vy")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/vz")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/pr")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/temp")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/co2")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
+        linkname = trim("/h2o")
+        call HdfParallelCreateGroup(linkname,filename,comm_ycut)
 
         cpc = (movie2Dy     - ym(mov_cj))/(ym(mov_cj+1) - ym(mov_cj))
         cmc = (ym(mov_cj+1) - movie2Dy)  /(ym(mov_cj+1) - ym(mov_cj))
 
-        dsetname = trim("ibm_body")
+        dsetname = trim("/ibm_body")
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmc*ibm_body(k,mov_cj,i) + cpc*ibm_body(k,mov_cj+1,i)
             end do
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
-    end if
+    
+    end if    
 
-    if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then
+    if ((zc(xstart(3)).le.movie2Dz).and.(zc(xend(3)+lvlhalo).gt.movie2Dz)) then  
+        
         filename = trim('Results/movie_zcut.h5')
+        call HdfParallelCreateBlankFile(filename,comm_zcut)
 
-        dsetname = trim("vx/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("vy/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("vz/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("pr/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("temp/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("co2/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("h2o/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
+        linkname = trim("/vx")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vy")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vz")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/pr")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/temp")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/co2")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/h2o")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
 
         cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
         cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
-
-        dsetname = trim("ibm_body")
+        
+        dsetname = trim("/ibm_body")
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmc*ibm_body(k,j,mov_ci) + cpc*ibm_body(k,j,mov_ci+1)
             end do
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
+    
     end if
 
     if (xend(3).eq.nzm) then
-        filename = trim('Results/movie_outlet.h5')
 
-        dsetname = trim("vx/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("vy/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("vz/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("pr/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("temp/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("co2/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
-        dsetname = trim("h2o/")
-        call HdfCreatePath(dsetname,filename,comm_zcut)
+        filename = trim('Results/movie_outlet.h5')
+        call HdfParallelCreateBlankFile(filename,comm_zcut)
+
+        linkname = trim("/vx")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vy")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vz")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/pr")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/temp")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/co2")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/h2o")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+
+    end if
+
+    if (xstart(3).eq.1) then
+
+        filename = trim('Results/movie_inlet.h5')
+        call HdfParallelCreateBlankFile(filename,comm_zcut)
+
+        linkname = trim("/vx")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vy")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/vz")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/pr")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/temp")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/co2")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+        linkname = trim("/h2o")
+        call HdfParallelCreateGroup(linkname,filename,comm_zcut)
+
     end if
 
 end subroutine InitMovie
@@ -204,7 +236,7 @@ subroutine Movie_xcut
     cpc = (movie2Dx     - xm(mov_ck))/(xm(mov_ck+1) - xm(mov_ck))
     cmc = (xm(mov_ck+1) - movie2Dx)  /(xm(mov_ck+1) - xm(mov_ck))
 
-    dsetname = trim("vx")//'/'//trim(frame)
+    dsetname = trim("/vx")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmx*vx(mov_xk,j,i) + cpx*vx(mov_xk+1,j,i)
@@ -212,7 +244,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("vy")//'/'//trim(frame)
+    dsetname = trim("/vy")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmy*vy(mov_yk,j,i) + cpy*vy(mov_yk+1,j,i)
@@ -220,7 +252,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("vz")//'/'//trim(frame)
+    dsetname = trim("/vz")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmz*vz(mov_zk,j,i) + cpz*vz(mov_zk+1,j,i)
@@ -228,7 +260,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("pr")//'/'//trim(frame)
+    dsetname = trim("/pr")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmc*pr(mov_ck,j,i) + cpc*pr(mov_ck+1,j,i)
@@ -236,7 +268,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("temp")//'/'//trim(frame)
+    dsetname = trim("/temp")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmx*temp(mov_xk,j,i) + cpx*temp(mov_xk+1,j,i)
@@ -244,7 +276,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("co2")//'/'//trim(frame)
+    dsetname = trim("/co2")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmx*co2(mov_xk,j,i) + cpx*co2(mov_xk+1,j,i)
@@ -252,7 +284,7 @@ subroutine Movie_xcut
     end do
     call HdfWriteReal2D_X(dsetname,filename,mov_xcut)
 
-    dsetname = trim("h2o")//'/'//trim(frame)
+    dsetname = trim("/h2o")//'/'//trim(frame)
     do j=xstart(2),xend(2)
         do i=xstart(3),xend(3)
             mov_xcut(j,i) = cmx*h2o(mov_xk,j,i) + cpx*h2o(mov_xk+1,j,i)
@@ -290,7 +322,7 @@ subroutine Movie_ycut
         cpc = (movie2Dy     - ym(mov_cj))/(ym(mov_cj+1) - ym(mov_cj))
         cmc = (ym(mov_cj+1) - movie2Dy)  /(ym(mov_cj+1) - ym(mov_cj))
 
-        dsetname = trim("vx")//'/'//trim(frame)
+        dsetname = trim("/vx")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmx*vx(k,mov_xj,i) + cpx*vx(k,mov_xj+1,i)
@@ -298,7 +330,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("vy")//'/'//trim(frame)
+        dsetname = trim("/vy")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmy*vy(k,mov_yj,i) + cpy*vy(k,mov_yj+1,i)
@@ -306,7 +338,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("vz")//'/'//trim(frame)
+        dsetname = trim("/vz")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmz*vz(k,mov_zj,i) + cpz*vz(k,mov_zj+1,i)
@@ -314,7 +346,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("pr")//'/'//trim(frame)
+        dsetname = trim("/pr")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmc*pr(k,mov_cj,i) + cpc*pr(k,mov_cj+1,i)
@@ -322,7 +354,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("temp")//'/'//trim(frame)
+        dsetname = trim("/temp")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmx*temp(k,mov_xj,i) + cpx*temp(k,mov_xj+1,i)
@@ -330,7 +362,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("co2")//'/'//trim(frame)
+        dsetname = trim("/co2")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmx*co2(k,mov_xj,i) + cpx*co2(k,mov_xj+1,i)
@@ -338,7 +370,7 @@ subroutine Movie_ycut
         end do
         call HdfWriteReal2D_Y(dsetname,filename,mov_ycut)
 
-        dsetname = trim("h2o")//'/'//trim(frame)
+        dsetname = trim("/h2o")//'/'//trim(frame)
         do k=1,nx
             do i=xstart(3),xend(3)
                 mov_ycut(k,i) = cmx*h2o(k,mov_xj,i) + cpx*h2o(k,mov_xj+1,i)
@@ -378,7 +410,7 @@ subroutine Movie_zcut
         cpc = (movie2Dz     - zm(mov_ci))/(zm(mov_ci+1) - zm(mov_ci))
         cmc = (zm(mov_ci+1) - movie2Dz)  /(zm(mov_ci+1) - zm(mov_ci))
 
-        dsetname = trim("vx")//'/'//trim(frame)
+        dsetname = trim("/vx")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmx*vx(k,j,mov_xi) + cpx*vx(k,j,mov_xi+1)
@@ -386,7 +418,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
 
-        dsetname = trim("vy")//'/'//trim(frame)
+        dsetname = trim("/vy")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmy*vy(k,j,mov_yi) + cpy*vy(k,j,mov_yi+1)
@@ -394,7 +426,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
     
-        dsetname = trim("vz")//'/'//trim(frame)
+        dsetname = trim("/vz")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmz*vz(k,j,mov_zi) + cpz*vz(k,j,mov_zi+1)
@@ -402,7 +434,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
 
-        dsetname = trim("pr")//'/'//trim(frame)
+        dsetname = trim("/pr")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmc*pr(k,j,mov_ci) + cpc*pr(k,j,mov_ci+1)
@@ -410,7 +442,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
 
-        dsetname = trim("temp")//'/'//trim(frame)
+        dsetname = trim("/temp")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmx*temp(k,j,mov_xi) + cpx*temp(k,j,mov_xi+1)
@@ -418,7 +450,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
 
-        dsetname = trim("co2")//'/'//trim(frame)
+        dsetname = trim("/co2")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmx*co2(k,j,mov_xi) + cpx*co2(k,j,mov_xi+1)
@@ -426,7 +458,7 @@ subroutine Movie_zcut
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_zcut)
 
-        dsetname = trim("h2o")//'/'//trim(frame)
+        dsetname = trim("/h2o")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_zcut(k,j) = cmx*h2o(k,j,mov_xi) + cpx*h2o(k,j,mov_xi+1)
@@ -437,6 +469,84 @@ subroutine Movie_zcut
     end if
 
 end subroutine Movie_zcut
+
+subroutine Movie_inlet
+
+    use param
+    use local_arrays, only: vx,vy,vz,pr,temp,co2,h2o
+    use decomp_2d, only: xstart,xend
+    use movie_indices
+    use mpih
+
+    implicit none
+
+    integer             :: k,j,i
+    character*50        :: dsetname,filename,frame
+
+    if (xstart(3).eq.1) then
+
+        filename = trim('Results/movie_inlet.h5')
+        write (frame,"(i5.5)") nint(time/tframe)
+    
+        dsetname = trim("/vx")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(vx(k,j,0) + vx(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+        dsetname = trim("/vy")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(vy(k,j,0) + vy(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+    
+        dsetname = trim("/vz")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = vz(k,j,1)
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+        dsetname = trim("/pr")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(pr(k,j,0) + pr(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+        dsetname = trim("/temp")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(temp(k,j,0) + temp(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+        dsetname = trim("/co2")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(co2(k,j,0) + co2(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+        dsetname = trim("/h2o")//'/'//trim(frame)
+        do k=1,nx
+            do j=xstart(2),xend(2)
+                mov_icut(k,j) = 0.5d0*(h2o(k,j,0) + h2o(k,j,1))
+            end do
+        end do
+        call HdfWriteReal2D_Z(dsetname,filename,mov_icut)
+
+    end if
+
+end subroutine Movie_inlet
 
 subroutine Movie_outlet
 
@@ -455,8 +565,8 @@ subroutine Movie_outlet
 
         filename = trim('Results/movie_outlet.h5')
         write (frame,"(i5.5)") nint(time/tframe)
-    
-        dsetname = trim("vx")//'/'//trim(frame)
+
+        dsetname = trim("/vx")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(vx(k,j,nzm) + vx(k,j,nz))
@@ -464,15 +574,15 @@ subroutine Movie_outlet
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("vy")//'/'//trim(frame)
+        dsetname = trim("/vy")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(vy(k,j,nzm) + vy(k,j,nz))
             end do
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
-    
-        dsetname = trim("vz")//'/'//trim(frame)
+
+        dsetname = trim("/vz")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = vz(k,j,nz)
@@ -480,7 +590,7 @@ subroutine Movie_outlet
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("pr")//'/'//trim(frame)
+        dsetname = trim("/pr")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(pr(k,j,nzm) + pr(k,j,nz))
@@ -488,7 +598,7 @@ subroutine Movie_outlet
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("temp")//'/'//trim(frame)
+        dsetname = trim("/temp")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(temp(k,j,nzm) + temp(k,j,nz))
@@ -496,7 +606,7 @@ subroutine Movie_outlet
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("co2")//'/'//trim(frame)
+        dsetname = trim("/co2")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(co2(k,j,nzm) + co2(k,j,nz))
@@ -504,7 +614,7 @@ subroutine Movie_outlet
         end do
         call HdfWriteReal2D_Z(dsetname,filename,mov_ocut)
 
-        dsetname = trim("h2o")//'/'//trim(frame)
+        dsetname = trim("/h2o")//'/'//trim(frame)
         do k=1,nx
             do j=xstart(2),xend(2)
                 mov_ocut(k,j) = 0.5d0*(h2o(k,j,nzm) + h2o(k,j,nz))

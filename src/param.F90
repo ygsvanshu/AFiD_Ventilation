@@ -46,6 +46,11 @@ module param
     real            :: startsnap,tsnap
 
     logical         :: savemovie=.false.
+    logical         :: savemovie_x=.false.
+    logical         :: savemovie_y=.false.
+    logical         :: savemovie_z=.false.
+    logical         :: savemovie_i=.false.
+    logical         :: savemovie_o=.false.
     real            :: tframe
     real            :: movie2Dx,movie2Dy,movie2Dz
     
@@ -146,7 +151,7 @@ module movie_indices
     integer                             :: mov_yi,mov_yj,mov_yk
     integer                             :: mov_zi,mov_zj,mov_zk
     integer                             :: mov_ci,mov_cj,mov_ck
-    real,allocatable,dimension(:,:)     :: mov_xcut,mov_ycut,mov_zcut,mov_ocut
+    real,allocatable,dimension(:,:)     :: mov_xcut,mov_ycut,mov_zcut,mov_icut,mov_ocut
 end module movie_indices
 
 module vent_arrays

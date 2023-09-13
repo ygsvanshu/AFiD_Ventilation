@@ -80,6 +80,7 @@ subroutine DeallocateVariables
     call DestroyReal2DArray(mov_xcut)
     call DestroyReal2DArray(mov_ycut)
     call DestroyReal2DArray(mov_zcut)
+    call DestroyReal2DArray(mov_icut)
     call DestroyReal2DArray(mov_ocut)
 
     if (statcalc) then
