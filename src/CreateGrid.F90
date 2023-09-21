@@ -233,19 +233,19 @@ subroutine CreateGrid
         ac3sk(kc) =-(ap3sk(kc)+am3sk(kc))
     enddo
 
-    ! LOWER WALL BOUNDARY CONDITIONS (INSLWS SETS NO-SLIP vs STRESS-FREE WALL)
+    ! LOWER WALL BOUNDARY CONDITIONS
     ! kc=1
     ! Note: dx3m(0)=g3rc(1)
     ap3sk(1) = dxq/g3rm(1)/dx3m(1)
-    am3sk(1) = dxq/g3rm(1)*2.d0*inslws/g3rc(1)
-    ac3sk(1) =-dxq/g3rm(1)*(1.d0/dx3m(1) + 2.d0*inslws/g3rc(1))
+    am3sk(1) = dxq/g3rm(1)*2.d0/g3rc(1)
+    ac3sk(1) =-dxq/g3rm(1)*(1.d0/dx3m(1) + 2.d0/g3rc(1))
 
-    ! UPPER WALL BOUNDARY CONDITIONS (INSLWN SETS NO-SLIP vs STRESS-FREE WALL)
+    ! UPPER WALL BOUNDARY CONDITIONS
     ! kc=nxm
     ! Note: dx3m(nxm)=g3rc(nx)
-    ap3sk(nxm) = dxq/g3rm(nxm)*2.d0*inslwn/g3rc(nx)
+    ap3sk(nxm) = dxq/g3rm(nxm)*2.d0/g3rc(nx)
     am3sk(nxm) = dxq/g3rm(nxm)/dx3m(nxm-1)
-    ac3sk(nxm) =-dxq/g3rm(nxm)*(2.d0*inslwn/g3rc(nx) + 1.d0/dx3m(nxm-1))
+    ac3sk(nxm) =-dxq/g3rm(nxm)*(2.d0/g3rc(nx) + 1.d0/dx3m(nxm-1))
 
     ! TEMPERATURE DIFFERENTIATION (XC VARIABLE)
     ! Note: As long Temp defined on XC coefficients

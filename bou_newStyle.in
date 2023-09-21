@@ -61,8 +61,9 @@ Contact: R. Hartmann rDOThartmannATutwenteDOTnl
 511 Person geometry location and scale       PX PY PZ SCLF      '0.2' '0.5' '0.5' '0.4'
 512 Breath geometry location and scale       BX BY BZ           '0.312' '0.5d0' '0.472'
 513 Breathing kernal width options           KW_SPACE KW_TIME   '0.0133' '0.235'      
-514 Boundary Conditions (bottom/top)         inslws inslwn      '1' '1'
-    (free-slip=0, no-slip=1)
+514 Breath interval and offset               B_TIME B_OFFSET    '1.0' '0.4705882353'
+515 Breath velocity and angle (degrees)      B_VEL B_ANGLE      '0.7081391770843106' '240' 
+516 Breath volume                            B_VOLUME           '0.185185185185e-4'
 
 ====> Output parameters -------------------------------------------------------
 601 Enable statistic calculation (n/y)       STATON TSTA NOUT   'y' '100' '10'
