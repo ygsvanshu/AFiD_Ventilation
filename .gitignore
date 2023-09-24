@@ -2,3 +2,7 @@
 .DS_Store
 /obj
 afid
+/Results
+continua*.h5
+stafield*.h5
+ibm_body.h5

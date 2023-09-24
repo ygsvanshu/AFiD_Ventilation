@@ -97,93 +97,13 @@ subroutine InitVariables
     !-------------------------------------------------
 
     if (statcalc) then
-        ! X-CUT
-        call AllocateReal2DArray(vx_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m1_xcut,xstart(2),xend(2),xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m2_xcut,xstart(2),xend(2),xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m3_xcut,xstart(2),xend(2),xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m4_xcut,xstart(2),xend(2),xstart(3),xend(3))
-        
-        ! Y-CUT
-        call AllocateReal2DArray(vx_m1_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m1_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m1_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m1_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m1_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m1_ycut,1,nx,xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m2_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m2_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m2_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m2_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m2_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m2_ycut,1,nx,xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m3_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m3_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m3_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m3_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m3_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m3_ycut,1,nx,xstart(3),xend(3))
-
-        call AllocateReal2DArray(vx_m4_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vy_m4_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(vz_m4_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(temp_m4_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(co2_m4_ycut,1,nx,xstart(3),xend(3))
-        call AllocateReal2DArray(h2o_m4_ycut,1,nx,xstart(3),xend(3))
-
-        ! Z-CUT
-        call AllocateReal2DArray(vx_m1_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vy_m1_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vz_m1_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(temp_m1_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(co2_m1_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(h2o_m1_zcut,1,nx,xstart(2),xend(2))
-
-        call AllocateReal2DArray(vx_m2_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vy_m2_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vz_m2_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(temp_m2_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(co2_m2_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(h2o_m2_zcut,1,nx,xstart(2),xend(2))
-
-        call AllocateReal2DArray(vx_m3_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vy_m3_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vz_m3_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(temp_m3_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(co2_m3_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(h2o_m3_zcut,1,nx,xstart(2),xend(2))
-
-        call AllocateReal2DArray(vx_m4_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vy_m4_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(vz_m4_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(temp_m4_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(co2_m4_zcut,1,nx,xstart(2),xend(2))
-        call AllocateReal2DArray(h2o_m4_zcut,1,nx,xstart(2),xend(2))
-
+        call AllocateReal3DArray(stat3d_vx_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_vy_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_vz_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_pr_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_temp_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_co2_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
+        call AllocateReal3DArray(stat3d_h2o_m1,1,nx,xstart(2),xend(2),xstart(3),xend(3))
     end if
 
     !-------------------------------------------------

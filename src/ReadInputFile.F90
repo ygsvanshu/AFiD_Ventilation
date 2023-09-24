@@ -305,15 +305,8 @@ SUBROUTINE read_from_bouin
             endif
             read(ss(2),*) tsta
             read(ss(3),*) nout
-            
-        ELSEIF(line(1:3)=='602') THEN 
-        ! ###### 2D STATISTICS SLICES ######
-            call scan_string (line, 3, ss, narg)
-            read(ss(1),*) stats2Dx
-            read(ss(2),*) stats2Dy
-            read(ss(3),*) stats2Dz
 
-        ELSEIF(line(1:3)=='603') THEN 
+        ELSEIF(line(1:3)=='602') THEN 
         ! ###### SNAPSHOTS ######
             call scan_string (line, 3, ss, narg)
             stringdummy1=ss(1)
@@ -329,7 +322,7 @@ SUBROUTINE read_from_bouin
             read(ss(2),*) startsnap
             read(ss(3),*) tsnap
 
-        ELSEIF(line(1:3)=='604') THEN 
+        ELSEIF(line(1:3)=='603') THEN 
         ! ###### MOVIE OUTPUT ######  
             call scan_string (line, 6, ss, narg)
 
@@ -390,14 +383,14 @@ SUBROUTINE read_from_bouin
 
             read(ss(6),*) tframe
 
-        ELSEIF(line(1:3)=='605') THEN 
+        ELSEIF(line(1:3)=='604') THEN 
             ! ###### 2D MOVIE SLICES ######
                 call scan_string (line, 3, ss, narg)
                 read(ss(1),*) movie2Dx
                 read(ss(2),*) movie2Dy
                 read(ss(3),*) movie2Dz
 
-        ELSEIF(line(1:3)=='606') THEN 
+        ELSEIF(line(1:3)=='605') THEN 
             ! ###### SAVE CONTINUA CHECKPOINT ######
                 call scan_string (line, 1, ss, narg)
                 read(ss(1),*) tcontinua
