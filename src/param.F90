@@ -40,7 +40,6 @@ module param
     logical         :: statcalc=.false.
     real            :: tsta
     integer         :: nout
-    real            :: stats2Dx,stats2Dy,stats2Dz
 
     logical         :: savesnap=.false.
     real            :: startsnap,tsnap
@@ -123,25 +122,7 @@ module stat_arrays
     integer                             :: nstatsamples
     real                                :: tstat
     real                                :: tinterval
-
-    integer                             :: stat_xi,stat_xj,stat_xk
-    integer                             :: stat_yi,stat_yj,stat_yk
-    integer                             :: stat_zi,stat_zj,stat_zk
-
-    real,allocatable,dimension(:,:)     :: vx_m1_xcut,vy_m1_xcut,vz_m1_xcut,temp_m1_xcut,co2_m1_xcut,h2o_m1_xcut
-    real,allocatable,dimension(:,:)     :: vx_m2_xcut,vy_m2_xcut,vz_m2_xcut,temp_m2_xcut,co2_m2_xcut,h2o_m2_xcut
-    real,allocatable,dimension(:,:)     :: vx_m3_xcut,vy_m3_xcut,vz_m3_xcut,temp_m3_xcut,co2_m3_xcut,h2o_m3_xcut
-    real,allocatable,dimension(:,:)     :: vx_m4_xcut,vy_m4_xcut,vz_m4_xcut,temp_m4_xcut,co2_m4_xcut,h2o_m4_xcut
-
-    real,allocatable,dimension(:,:)     :: vx_m1_ycut,vy_m1_ycut,vz_m1_ycut,temp_m1_ycut,co2_m1_ycut,h2o_m1_ycut
-    real,allocatable,dimension(:,:)     :: vx_m2_ycut,vy_m2_ycut,vz_m2_ycut,temp_m2_ycut,co2_m2_ycut,h2o_m2_ycut
-    real,allocatable,dimension(:,:)     :: vx_m3_ycut,vy_m3_ycut,vz_m3_ycut,temp_m3_ycut,co2_m3_ycut,h2o_m3_ycut
-    real,allocatable,dimension(:,:)     :: vx_m4_ycut,vy_m4_ycut,vz_m4_ycut,temp_m4_ycut,co2_m4_ycut,h2o_m4_ycut
-
-    real,allocatable,dimension(:,:)     :: vx_m1_zcut,vy_m1_zcut,vz_m1_zcut,temp_m1_zcut,co2_m1_zcut,h2o_m1_zcut
-    real,allocatable,dimension(:,:)     :: vx_m2_zcut,vy_m2_zcut,vz_m2_zcut,temp_m2_zcut,co2_m2_zcut,h2o_m2_zcut
-    real,allocatable,dimension(:,:)     :: vx_m3_zcut,vy_m3_zcut,vz_m3_zcut,temp_m3_zcut,co2_m3_zcut,h2o_m3_zcut
-    real,allocatable,dimension(:,:)     :: vx_m4_zcut,vy_m4_zcut,vz_m4_zcut,temp_m4_zcut,co2_m4_zcut,h2o_m4_zcut
+    real,allocatable,dimension(:,:,:)   :: stat3d_vx_m1,stat3d_vy_m1,stat3d_vz_m1,stat3d_pr_m1,stat3d_temp_m1,stat3d_co2_m1,stat3d_h2o_m1
 
 end module stat_arrays
 
